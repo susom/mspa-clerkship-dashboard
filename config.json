@@ -1,10 +1,8 @@
 {
-	"name": "ClassNameHere",
-
-	"namespace": "Stanford\\ClassNameHere",
-
-	"description": "A template for a REDCap External Module",
-
+	"name": "ClerkshipDashboard",
+	"namespace": "Stanford\\ClerkshipDashboard",
+	"description": "Dashboard for Clerkship Scheduling",
+    "framework-version": 13,
 	"documentation": "README.md",
 
 	"authors": [
@@ -12,7 +10,12 @@
 			"name": "Andrew Martin",
 			"email": "andy123@stanford.edu",
 			"institution": "Stanford University"
-		}
+		},
+        {
+            "name": "Irvin Szeto",
+            "email": "irvins@stanford.edu",
+            "institution": "Stanford University"
+        }
 	],
 
 	"permissions": [
@@ -20,20 +23,32 @@
 		"redcap_module_project_enable",
 		"redcap_module_save_configuration"
 	],
-	
-	"enable-every-page-hooks-on-system-pages": false,	
+
+	"enable-every-page-hooks-on-system-pages": false,
 
 	"links": {
 		"project": [
-
+            {
+                "name": "Schedule Dashboard",
+                "icon": "fas fa-door-open",
+                "url": "pages/root.php",
+                "show-header-and-footer": false
+            }
 		],
 		"control-center": [
 
 		]
 	},
 
-	"no-auth-pages": [
+    "enable-ajax-logging": false,
 
+
+    "no-auth-ajax-actions": [
+        "TestAction"
+    ],
+
+	"no-auth-pages": [
+        "pages/root"
 	],
 
 	"project-settings": [

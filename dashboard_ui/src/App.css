@@ -1,0 +1,53 @@
+/* Add a container around the table for better control */
+.table-container {
+    margin: 20px;
+    width: calc(100% - 40px); /* Subtracting total horizontal margin from 100% */
+}
+
+.data-table {
+    width: 100%; /* Table will take the full width of its container */
+    border-collapse: collapse;
+    font-size: 85%;
+    font-family: Tahoma, sans-serif;
+}
+
+.data-table th, .data-table td {
+    border: 1px solid black;
+    padding: 8px 5px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.data-table th i,
+.data-table td em {
+    font-size:77%;
+    display:block;
+    margin:5px 0 0;
+    white-space: nowrap;
+    font-style:normal;
+    color:#996;
+}
+
+.data-table th div {
+    white-space: nowrap;
+}
+
+.data-table td div {
+    font-size:92%;
+}
+
+.data-table td em{
+    font-size:77%;
+    margin-top:8px;
+    color:darkblue;
+    font-weight:bold;
+}
+.data-table td em:before {
+    content:"(";
+}
+.data-table td em:after{
+    content:")";
+}
+
+
+/* Add other CSS styles as needed */
