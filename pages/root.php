@@ -1,6 +1,12 @@
 <?php
 /** @var \Stanford\ClerkshipDashboard\ClerkshipDashboard $module */
-    $build_files = $module->generateAssetFiles();
+$build_files = $module->generateAssetFiles();
+
+// Retrieve and sanitize student_id from GET request
+$student_id = filter_input(INPUT_GET, 'student_id', FILTER_SANITIZE_STRING);
+
+// Pass sanitized student_id to getRotationsForYear function
+$studentsData = $module->getRotationsForYear($student_id);
 ?>
 
 <html lang="en">
@@ -21,7 +27,7 @@
 
     <script>
         //hmm how to better pass this in?
-        window.studentsData = <?= $module->getRotationsForYear() ?>;
+        window.studentsData = <?= $studentsData ?>;
     </script>
 
     <?php
@@ -34,3 +40,4 @@
 <div id="root"></div>
 </body>
 </html>
+

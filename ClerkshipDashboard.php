@@ -17,16 +17,43 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
 	}
 
     /**
+     * @return array
+     * Gets fieldnames for "Rotation" Instrument
+     */
+    public function getRotationInstrumentFields() {
+        // Retrieve the data dictionary from REDCap
+        $dataDictionary = REDCap::getDataDictionary("array", false, null, "rotation");
+
+        // Initialize an array to store the field names
+        $fields = ["record_id", "full_name", "email"];
+
+        // Loop through the data dictionary and add field names to the array
+        foreach ($dataDictionary as $field_name => $field_attributes) {
+            // Add the field name to the fields array
+            $fields[] = $field_name;
+        }
+
+        return $fields;
+    }
+
+    /**
      * @return json
      * get Data for this years Student and their Rotations and return json
      */
-    public function getRotationsForYear($year = 2025) {
+    public function getRotationsForYear($student_id = null, $year = 2025) {
+        // First, get the clinical site addresses
+        $siteAddresses = $this->getClinicalSiteAddresses();
+
         // Define the parameters for the REDCap::getData function
         $params = array(
             'return_format' => 'array', // Specifies the format of the returned data
             'fields' => $this->getRotationInstrumentFields(), // Retrieve all fields from the "Rotation" instrument
             'events' => array("student_arm_1","rotation_arm_3")
         );
+
+        if(!is_null($student_id)){
+            $params["filterLogic"] = "[student_id] = '$student_id'";
+        }
 
         // Retrieve data from REDCap
         $data       = REDCap::getData($params);
@@ -65,6 +92,13 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
                                 $event['full_name'] = $formattedName;
                             }
 
+                            $location = $event['location'];
+                            if (isset($siteAddresses[$location])) {
+                                $event['site_address'] = $siteAddresses[$location];
+                            } else {
+                                $event['site_address'] = 'No Address Found';
+                            }
+
                             $students[$studentId][] = $event;
                         }
                     }
@@ -75,25 +109,41 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
         return json_encode($students);
     }
 
+
+
     /**
      * @return array
      * Gets fieldnames for "Rotation" Instrument
      */
-    public function getRotationInstrumentFields() {
-        // Retrieve the data dictionary from REDCap
-        $dataDictionary = REDCap::getDataDictionary("array", false, null, "rotation");
+    public function getClinicalSiteAddresses() {
+        // Define the parameters for the REDCap::getData function
+        $params = array(
+            'return_format' => 'array',
+            'fields' => array("record_id", "site_address"),
+            'events' => array("site_review_arm_5")
+        );
 
-        // Initialize an array to store the field names
-        $fields = ["record_id", "full_name", "email"];
-
-        // Loop through the data dictionary and add field names to the array
-        foreach ($dataDictionary as $field_name => $field_attributes) {
-            // Add the field name to the fields array
-            $fields[] = $field_name;
+        // Retrieve data from REDCap
+        $data = REDCap::getData($params);
+        $sites = array();
+        foreach ($data as $recordId => $nestedData) {
+            // Check if repeat instances exist
+            if (isset($nestedData['repeat_instances'])) {
+                foreach ($nestedData['repeat_instances'] as $eventId => $instances) {
+                    foreach ($instances['clinical_site_evaluation'] as $instance) {
+                        if (!empty($instance['site_address'])) {
+                            // Store the first non-empty site address and stop further iteration
+                            $sites[$recordId] = $instance['site_address'];
+                            break 2; // Exit from both foreach loops
+                        }
+                    }
+                }
+            }
         }
 
-        return $fields;
+        return $sites;
     }
+
 
 
     /**
@@ -203,93 +253,7 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
                 return "Test Action JSMO Ajax";
 
             case "getStudentData":
-                $students = array(
-
-                        array(
-                            'name' => 'Alibayli, Aykhan 1.5x',
-                            'periods' => [
-                                [
-                                    'period' => 'Period 10',
-                                    'location' => 'Palo Alto VA',
-                                    'specialty' => 'Internal Medicine (IM1)',
-                                    'color' => '#FFFFFF',
-                                ],
-                                [
-                                    'period' => 'Period 11',
-                                    'location' => 'Palo Alto VA',
-                                    'specialty' => 'Behavioral Medicine',
-                                    'color' => '#FFFFFF',
-                                ],
-                                [
-                                    'period' => 'Period 12',
-                                    'location' => 'PAVA',
-                                    'specialty' => 'Surgery',
-                                    'color' => '#FFFFFF',
-                                ],
-                                [
-                                    'period' => 'Period 1',
-                                    'location' => 'SHC',
-                                    'specialty' => 'Emergency Medicine',
-                                    'color' => '#FFFFFF',
-                                ],
-                                [
-                                    'period' => 'Period 2',
-                                    'location' => 'SHC Santa Clara',
-                                    'specialty' => 'Family Medicine (FM1)',
-                                    'color' => '#FFFFFF',
-                                ],
-                                [
-                                    'period' => 'Period 3',
-                                    'location' => 'UHA Alameda Dr. Mirmira',
-                                    'specialty' => 'Family Medicine (FM2)',
-                                    'color' => '#FFFFFF',
-                                ],
-                                [
-                                    'period' => 'Period 4',
-                                    'location' => 'First Pediatrics Medical Group Dr. Maniam-Mohan',
-                                    'specialty' => 'Peds',
-                                    'color' => '#FFFFFF',
-                                ],
-                                [
-                                    'period' => 'Period 5',
-                                    'location' => 'TriValley',
-                                    'specialty' => 'Internal Medicine (IM2)',
-                                    'color' => '#FFFFFF',
-                                ],
-                                [
-                                    'period' => 'Period 6',
-                                    'location' => 'Altos Oaks Med. Group (PCHA) Dr. Weber',
-                                    'specialty' => "Women's Health",
-                                    'color' => '#FFFFFF',
-                                ],
-                                [
-                                    'period' => 'Period 7',
-                                    'location' => 'SHC Med 7 Internal Medicine (IM1)',
-                                    'specialty' => 'RETAKE',
-                                    'color' => '#FFFFFF',
-                                ],
-                                [
-                                    'period' => 'Period 8',
-                                    'location' => 'Palo Alto VA',
-                                    'specialty' => 'Behavioral Medicine - elective (SW)',
-                                    'color' => '#FFFFFF',
-                                ],
-                                [
-                                    'period' => 'Period 9',
-                                    'location' => 'Palo Alto VA Behavioral Medicine - elective',
-                                    'specialty' => '(SW)',
-                                    'color' => '#FFFFFF',
-                                ],
-                                [
-                                    'period' => 'TGR',
-                                    'location' => '',
-                                    'specialty' => '',
-                                    'color' => '#FFFFFF',
-                                ]
-                            ]
-                        )
-                );
-
+                $students = $this->getRotationsForYear();
                 return $students;
 
             default:

@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { Tooltip } from 'react-tippy';
+import 'react-tippy/dist/tippy.css';
+
 import './App.css';
 
 // Placeholder function to get color based on some logic
@@ -66,8 +69,12 @@ const getSpecialtyFromRecordId = (recordId) => {
 };
 
 function App() {
-    // Convert studentsData to an array for easier mapping
-    const students = Object.keys(studentsData).map(studentKey => {
+
+    // Convert studentsData to an array for easier mapping and sorting
+    let students = Object.keys(studentsData).map(studentKey => {
+        // Extract last name from the studentKey
+        const lastName = studentKey.split('_')[1].split(',')[0].trim();
+
         // Create an array of periods based on periodDates, filling missing data with defaults
         const studentPeriods = Object.keys(periodDates).map(periodKey => {
             const month = periodKey.split(' ')[1]; // Extract month number from periodKey
@@ -75,15 +82,21 @@ function App() {
             return {
                 ...periodData,
                 specialty: periodData.record_id ? getSpecialtyFromRecordId(periodData.record_id) : '',
-                locationParts: periodData.location ? periodData.location.split("_") : []
+                locationParts: periodData.location ? periodData.location.split("_") : [],
+                siteAddress: periodData.site_address || ''
             };
         });
 
         return {
+            key: studentKey, // Include the studentKey here
             name: studentsData[studentKey]?.[0]?.full_name || "Unknown",
+            lastName, // Add the extracted last name
             periods: studentPeriods
         };
     });
+
+    // Sort the students array by last name
+    students.sort((a, b) => a.lastName.localeCompare(b.lastName));
 
     return (
         <div className="App">
@@ -103,14 +116,24 @@ function App() {
                     <tbody>
                     {students.map((student, studentIndex) => (
                         <tr key={studentIndex}>
-                            <td>{student.name}</td>
+                            <td>
+                                {student.name}
+                                <div style={{ fontSize: 'small', color: 'gray' }}>{student.key}</div>
+                            </td>
+
                             {student.periods.map((period, index) => (
                                 <td key={index} style={{ backgroundColor: getColor(period) }}>
+                                    <Tooltip
+                                        title={period.siteAddress}
+                                        position="top"
+                                        key={index}
+                                    >
                                     {period.locationParts.map((part, partIndex) => (
-                                        <div key={partIndex}>
+                                        <div key={partIndex} >
                                             {part}{partIndex < period.locationParts.length - 1 ? '' : ''}
                                         </div>
                                     ))}
+                                    </Tooltip>
                                     {period.specialty && <em>{period.specialty}</em>}
                                 </td>
                             ))}
