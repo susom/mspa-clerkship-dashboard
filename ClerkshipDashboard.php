@@ -4,6 +4,7 @@ namespace Stanford\ClerkshipDashboard;
 require_once "emLoggerTrait.php";
 
 use REDCap;
+use DateTime;
 
 class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
 
@@ -147,7 +148,7 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
             }
         }
 
-        return json_encode($students);
+        return $students;
     }
 
 
@@ -183,6 +184,88 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
 
         return $sites;
     }
+
+
+    public function extractStartDatesForPeriods($studentData) {
+        // Define the period sequence
+        $periodSequence = [10, 11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+        // Initialize an array with "n/a" for each period
+        $startDates = array_fill_keys($periodSequence, 'na');
+
+        // Check if the first student's data is available
+        if (!is_array($studentData) || empty($studentData)) {
+            return array_values($startDates); // Return "n/a" for all periods if no data
+        }
+
+        // Get the first student's data
+        $firstStudentData = reset($studentData);
+
+        // Iterate over the student's data to extract start dates
+        foreach ($firstStudentData as $data) {
+            $month = (int)$data['month'];
+            if (array_key_exists($month, $startDates)) {
+                // Format the start date
+                $startDateTime = DateTime::createFromFormat('Y-m-d', $data['start_date']);
+                $startDateFormatted = $startDateTime ? $startDateTime->format('m-d-Y') : 'n/a';
+                $startDates[$month] = $startDateFormatted;
+            }
+        }
+
+        // Return the dates in the order of the period sequence
+        return array_values($startDates);
+    }
+
+
+    public function generatePeriodDates($dates, $endDateOffset = 23) {
+        // Period sequence
+        $periodSequence = ['Period 10', 'Period 11', 'Period 12', 'Period 1', 'Period 2', 'Period 3', 'Period 4', 'Period 5', 'Period 6', 'Period 7', 'Period 8', 'Period 9'];
+
+        $periodDates = [];
+        $previousYear = null;
+        foreach ($periodSequence as $index => $period) {
+            // Handle 'n/a' dates
+            if (!isset($dates[$index]) || $dates[$index] === 'n/a') {
+                $periodDates[$period] = ['start' => 'n/a', 'end' => 'n/a'];
+                continue;
+            }
+
+            $startDate = $dates[$index];
+
+            // Check if the date is valid
+            $startDateTime = DateTime::createFromFormat('m-d-Y', $startDate);
+            if ($startDateTime === false) {
+                // Skip invalid dates
+                $periodDates[$period] = ['start' => 'n/a', 'end' => 'n/a'];
+                continue;
+            }
+
+            $year = $startDateTime->format('Y');
+
+            // Format the start date
+            $startFormatted = $startDateTime->format('n/j');
+            if ($previousYear !== $year) {
+                $startFormatted .= '/' . $startDateTime->format('y');
+                $previousYear = $year;
+            }
+
+            // Calculate the end date
+            $endDateTime = clone $startDateTime;
+            $endDateTime->modify("+$endDateOffset days");
+            $endFormatted = $endDateTime->format('n/j');
+
+            // Add to the periodDates array
+            $periodDates[$period] = [
+                'start' => $startFormatted,
+                'end' => $endFormatted
+            ];
+        }
+
+        $this->emLog($periodDates);
+
+        return $periodDates;
+    }
+
 
 
 

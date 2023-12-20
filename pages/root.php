@@ -1,12 +1,14 @@
 <?php
 /** @var \Stanford\ClerkshipDashboard\ClerkshipDashboard $module */
-$build_files = $module->generateAssetFiles();
+$build_files    = $module->generateAssetFiles();
 
 // Retrieve and sanitize student_id from GET request
-$student_id = filter_input(INPUT_GET, 'student_id', FILTER_SANITIZE_STRING);
+$student_id     = filter_input(INPUT_GET, 'student_id', FILTER_SANITIZE_STRING);
 
 // Pass sanitized student_id to getRotationsForYear function
-$studentsData = $module->getRotationsForYear($student_id);
+$studentsData   = $module->getRotationsForYear($student_id);
+$startDates     = $module->extractStartDatesForPeriods($studentsData);
+$periodDates    = $module->generatePeriodDates($startDates, 23);
 ?>
 
 <html lang="en">
@@ -27,7 +29,8 @@ $studentsData = $module->getRotationsForYear($student_id);
 
     <script>
         //hmm how to better pass this in?
-        window.studentsData = <?= $studentsData ?>;
+        window.studentsData = <?= json_encode($studentsData) ?>;
+        window.periodDates  = <?= json_encode($periodDates) ?>
     </script>
 
     <?php

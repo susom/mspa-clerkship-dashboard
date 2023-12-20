@@ -46,23 +46,10 @@ const getColor = (period) => {
     return "#FFFFFF"; // Default white
 };
 
-const periodDates = {
-    'Period 10': { start: '4/1/24', end: '4/25' },
-    'Period 11': { start: '4/29', end: '5/23' },
-    'Period 12': { start: '5/27', end: '6/20' },
-    'Period 1': { start: '7/1', end: '7/25' },
-    'Period 2': { start: '7/29', end: '8/22' },
-    'Period 3': { start: '8/26', end: '9/19' },
-    'Period 4': { start: '9/23', end: '10/17' },
-    'Period 5': { start: '10/21', end: '11/14' },
-    'Period 6': { start: '11/18', end: '12/12' },
-    'Period 7': { start: '1/6/25', end: '1/30' },
-    'Period 8': { start: '2/3', end: '2/27' },
-    'Period 9': { start: '3/4', end: '3/28' }
-};
+const periodDates   = window.periodDates;
 
 // Data from the Excel sheet, structured as per the output we got
-const studentsData = window.studentsData;
+const studentsData  = window.studentsData;
 
 // Function to extract specialty abbreviation from record_id
 const getSpecialtyFromRecordId = (recordId) => {
