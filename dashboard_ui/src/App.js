@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Tooltip } from 'react-tippy';
 import 'react-tippy/dist/tippy.css';
 
+import { Calendar, Envelope } from 'react-bootstrap-icons';
+
 import './App.css';
 
 // Placeholder function to get color based on some logic
@@ -114,31 +116,51 @@ function App() {
                     </tr>
                     </thead>
                     <tbody>
-                    {students.map((student, studentIndex) => (
-                        <tr key={studentIndex}>
+                    {students.map((student, studentIndex) => {
+                        const scheduleLink  = student.periods[0]?.student_schedule;
+                        const mailtoLink    = `mailto:${student.periods[0]?.email}?subject=Your 2024 - 2025 Rotation Schedule&body=See your schedule at: ${encodeURIComponent(scheduleLink)}`;
+
+                        return(<tr key={studentIndex}>
                             <td>
-                                {student.name}
-                                <div style={{ fontSize: 'small', color: 'gray' }}>{student.key}</div>
+                                <div>{student.name}</div>
+
+                                {student.periods[0]?.student_schedule && (
+                                    <>
+                                        <a href={mailtoLink} target="_blank" rel="noopener noreferrer">
+                                            <Envelope /> Mail
+                                        </a>
+                                        or
+                                        <a href={scheduleLink} target="_blank" rel="noopener noreferrer">
+                                            <Calendar /> Link Only
+                                        </a>
+                                    </>
+                                )}
+
+                                {student.periods[0]?.student_url && (
+                                    <a href={student.periods[0].student_url} target="_blank" rel="noopener noreferrer">
+                                        <Envelope/> Email
+                                    </a>
+                                )}
                             </td>
 
                             {student.periods.map((period, index) => (
-                                <td key={index} style={{ backgroundColor: getColor(period) }}>
+                                <td key={index} style={{backgroundColor: getColor(period)}}>
                                     <Tooltip
                                         title={period.siteAddress}
                                         position="top"
                                         key={index}
                                     >
-                                    {period.locationParts.map((part, partIndex) => (
-                                        <div key={partIndex} >
-                                            {part}{partIndex < period.locationParts.length - 1 ? '' : ''}
-                                        </div>
-                                    ))}
+                                        {period.locationParts.map((part, partIndex) => (
+                                            <div key={partIndex}>
+                                                {part}{partIndex < period.locationParts.length - 1 ? '' : ''}
+                                            </div>
+                                        ))}
                                     </Tooltip>
                                     {period.specialty && <em>{period.specialty}</em>}
                                 </td>
                             ))}
                         </tr>
-                    ))}
+                    )})}
                     </tbody>
                 </table>
             </div>

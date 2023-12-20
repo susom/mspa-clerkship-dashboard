@@ -34,6 +34,16 @@
 
 .data-table td div {
     font-size:92%;
+    cursor:pointer;
+}
+
+.data-table td a{
+    font-size:small;
+    text-decoration:none;
+    color:gray;
+    line-height:110%;
+    margin:3px 0;
+    display:block;
 }
 
 .data-table td em{
