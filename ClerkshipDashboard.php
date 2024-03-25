@@ -15,16 +15,17 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
     private $default_rotation_offset;
     private $project_id_mspa;
     private $project_id_patient_log;
+    private $project_id_onboarding;
 
     public function __construct() {
 		parent::__construct();
 		// Other code to run when object is instantiated
 
-        $this->default_year             = 2025;//$this->getProjectSetting("project-default-rotation-year");
-        $this->default_rotation_offset  = 23;//$this->getProjectSetting("project-default-rotation-offset");
-
-        $this->project_id_mspa          = 36;//$this->getProjectSetting("project-id-mspa");
-        $this->project_id_patient_log   = 34;//$this->getProjectSetting("project-id-patient-log");
+        $this->default_year             = $this->getProjectSetting("project-default-rotation-year");
+        $this->default_rotation_offset  = $this->getProjectSetting("project-default-rotation-offset");
+        $this->project_id_mspa          = $this->getProjectSetting("project-id-mspa");
+        $this->project_id_patient_log   = $this->getProjectSetting("project-id-patient-log");
+        $this->project_id_onboarding    = $this->getProjectSetting("project-id-onboarding");
     }
 
     /**
@@ -213,7 +214,7 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
             //NOW LETS GET ALL THE CLERKSHIP EVAL .. PER ROTATION?
             $studentData = $this->getClerkShipEvalData($studentData, $year);
 
-
+            //NOW CREATE THE LINKS TO ADD TO ROTATIONS
             $onboardingProjectFields = array(
                 "contact_info",
                 "general_onboarding",
@@ -373,7 +374,7 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
 
         $studentData = $this->mergeClerkshipDataWithStudentData($studentData, $just_this_year);
 
-        $this->emDebug("studentData", current($studentData));
+//        $this->emDebug("studentData", current($studentData));
         // Optional: Process $allClerkshipEvalData as needed to augment $studentData
         // This step will depend on how you need to integrate or use the retrieved data with your existing student data
 

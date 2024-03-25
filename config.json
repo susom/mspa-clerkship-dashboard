@@ -76,6 +76,12 @@
             "name": "<b>Patient Logs Project ID</b><br> Required for the schedule/admin dashboards",
             "required": true,
             "type": "text"
+        },
+        {
+            "key": "project-id-onboarding",
+            "name": "<b>Onboarding Project ID</b><br> Required for the schedule/admin dashboards",
+            "required": true,
+            "type": "text"
         }
 	],
 
