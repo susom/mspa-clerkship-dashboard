@@ -11,3 +11,23 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.bg_complete {
+    background: #5F7C8A;
+    color: #FFFFFF; /* White text for better contrast */
+}
+
+.bg_rotationend {
+    background: #1E8449;
+    color: #FFFFFF;
+}
+
+.bg_rotationongoing {
+    background: #CA6F1E;
+    color: #000000;
+}
+
+.bg_rotationstart {
+    background: #922B21;
+    color: #FFFFFF;
+}

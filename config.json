@@ -6,11 +6,6 @@
 	"documentation": "README.md",
 
 	"authors": [
-		{
-			"name": "Andrew Martin",
-			"email": "andy123@stanford.edu",
-			"institution": "Stanford University"
-		},
         {
             "name": "Irvin Szeto",
             "email": "irvins@stanford.edu",
@@ -23,9 +18,15 @@
 	"links": {
 		"project": [
             {
-                "name": "Schedule Dashboard",
+                "name": "Rotation Schedule Dashboard",
                 "icon": "fas fa-door-open",
                 "url": "pages/root.php",
+                "show-header-and-footer": false
+            },
+            {
+                "name": "Rotation Admin Dashboard",
+                "icon": "fas fa-door-open",
+                "url": "pages/root.php?view=admin",
                 "show-header-and-footer": false
             }
 		],
@@ -51,7 +52,31 @@
 			"name": "<b>Enable Debug Logging</b><br><i>(optional)</i> Requires installation and configuration of emLogger",
 			"required": false,
 			"type": "checkbox"
-		}
+		},
+        {
+            "key": "project-default-rotation-year",
+            "name": "<b>Default rotation year</b>",
+            "required": true,
+            "type": "text"
+        },
+        {
+            "key": "project-default-rotation-offset",
+            "name": "<b>Default rotation offset (days)</b>",
+            "required": true,
+            "type": "text"
+        },
+        {
+            "key": "project-id-mspa",
+            "name": "<b>MSPA Academic Progress Project ID</b><br> Required for the schedule/admin dashboards",
+            "required": true,
+            "type": "text"
+        },
+        {
+            "key": "project-id-patient-log",
+            "name": "<b>Patient Logs Project ID</b><br> Required for the schedule/admin dashboards",
+            "required": true,
+            "type": "text"
+        }
 	],
 
 

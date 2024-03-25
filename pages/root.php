@@ -4,11 +4,12 @@ $build_files    = $module->generateAssetFiles();
 
 // Retrieve and sanitize student_id from GET request
 $student_id     = filter_input(INPUT_GET, 'student_id', FILTER_SANITIZE_STRING);
+$custom_year    = filter_input(INPUT_GET, 'year', FILTER_SANITIZE_STRING);
 
 // Pass sanitized student_id to getRotationsForYear function
-$studentsData   = $module->getRotationsForYear($student_id);
+$studentsData   = $module->getRotationsForYear($student_id, $custom_year);
 $startDates     = $module->extractStartDatesForPeriods($studentsData);
-$periodDates    = $module->generatePeriodDates($startDates, 23);
+$periodDates    = $module->generatePeriodDates($startDates);
 ?>
 
 <html lang="en">
