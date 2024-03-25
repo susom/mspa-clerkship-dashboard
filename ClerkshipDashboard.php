@@ -20,12 +20,6 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
     public function __construct() {
 		parent::__construct();
 		// Other code to run when object is instantiated
-
-        $this->default_year             = $this->getProjectSetting("project-default-rotation-year");
-        $this->default_rotation_offset  = $this->getProjectSetting("project-default-rotation-offset");
-        $this->project_id_mspa          = $this->getProjectSetting("project-id-mspa");
-        $this->project_id_patient_log   = $this->getProjectSetting("project-id-patient-log");
-        $this->project_id_onboarding    = $this->getProjectSetting("project-id-onboarding");
     }
 
     /**
@@ -114,6 +108,12 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
      * get Data for this years Student and their Rotations and return json
      */
     public function getRotationsForYear($student_id = null, $year = null) {
+        $this->default_year             = $this->getProjectSetting("project-default-rotation-year");
+        $this->default_rotation_offset  = $this->getProjectSetting("project-default-rotation-offset");
+        $this->project_id_mspa          = $this->getProjectSetting("project-id-mspa");
+        $this->project_id_patient_log   = $this->getProjectSetting("project-id-patient-log");
+        $this->project_id_onboarding    = $this->getProjectSetting("project-id-onboarding");
+
         if ($year === null) {
             $year = $this->default_year;
         }
