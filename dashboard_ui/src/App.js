@@ -22,6 +22,8 @@ const getCssClassForRotation = (rotationData, isAdminView) => {
         eor_repeat_score,
         start_date,
         specialty,
+        average_score,
+
         // Assuming '1' signifies a complete Aquifer case and '2' signifies a complete preceptor evaluation
         aquifer302 = '',
         aquifer304 = '',
@@ -62,12 +64,11 @@ const getCssClassForRotation = (rotationData, isAdminView) => {
         return 'bg_complete'; // Grey
     }
 
-    // console.log('bg_rotationend:' + rotationData.start_date, rotationEnd < today,  student_evaluation_of_preceptor_complete, hasCompletePreceptorEvaluation, communication_forms_complete, hasCompleteAquiferCase, patient_log_complete, fail_eor);
-
+    // console.log('bg_rotationend:' + rotationData.start_date, rotationEnd < today,  student_evaluation_of_preceptor_complete, hasCompletePreceptorEvaluation, average_score, communication_forms_complete, hasCompleteAquiferCase, patient_log_complete, fail_eor);
     if (rotationEnd < today &&
         student_evaluation_of_preceptor_complete === '2' &&
         hasCompletePreceptorEvaluation &&
-        // Placeholder for overall_evaluation_score condition - need further data or calculation method
+        average_score > 3 &&
         communication_forms_complete === '2' &&
         hasCompleteAquiferCase &&
         patient_log_complete === '2' &&
@@ -76,29 +77,25 @@ const getCssClassForRotation = (rotationData, isAdminView) => {
         return 'bg_rotationend'; // Green
     }
 
-    console.log('bg_rotationongoing:' + rotationData.start_date, startDate < today,  student_evaluation_of_preceptor_complete, hasCompletePreceptorEvaluation, hasCompleteAquiferCase, patient_log_complete, communication_forms_complete, fail_eor);
-
+    console.log('bg_rotationongoing:' + rotationData.start_date, startDate < today,  student_evaluation_of_preceptor_complete, hasCompletePreceptorEvaluation, hasCompleteAquiferCase, patient_log_complete, average_score, communication_forms_complete, fail_eor);
     if (startDate < today &&
-        (student_evaluation_of_preceptor_complete === '2' &&
-            hasCompletePreceptorEvaluation &&
-            hasCompleteAquiferCase &&
-            patient_log_complete === '2') &&
-        // Placeholder for overall_evaluation_score condition - need further data or calculation method
-        // Assuming overall_evaluation_score < 3 is a placeholder for not satisfactory evaluation
-        (communication_forms_complete !== '2')
-
-            || (fail_eor === '1')
+        ( student_evaluation_of_preceptor_complete === '2' &&
+        hasCompletePreceptorEvaluation &&
+        hasCompleteAquiferCase &&
+        patient_log_complete === '2' &&
+        (average_score < 3 || communication_forms_complete !== '2') )
+        || (fail_eor === '1')
     ) {
         return 'bg_rotationongoing'; // Yellow
     }
 
     console.log('bg_rotationstart:' + rotationData.start_date, startDate < today,  student_evaluation_of_preceptor_complete, hasCompletePreceptorEvaluation, hasCompleteAquiferCase, patient_log_complete, eor_repeat_score, eor_repeat_score);
     if (startDate < today &&
-        (student_evaluation_of_preceptor_complete !== '2' ||
-            !hasCompletePreceptorEvaluation ||
-            !hasCompleteAquiferCase ||
-            patient_log_complete !== '2' ||
-            (eor_repeat_score && eor_repeat_score < 380))
+        ( student_evaluation_of_preceptor_complete !== '2' ||
+        !hasCompletePreceptorEvaluation ||
+        !hasCompleteAquiferCase ||
+        patient_log_complete !== '2' ||
+        (eor_repeat_score && eor_repeat_score < 380) )
     ) {
         return 'bg_rotationstart'; // Red
     }
@@ -178,10 +175,10 @@ function App() {
                                 <td>
                                     <div>{student.name}</div>
                                     {isAdminView && (
-                                        <div className={"sutdent_links"}>
+                                        <div className={"student_links"}>
                                             {student.periods[0]?.student_url && (<a href={student.periods[0].student_url} target="_blank" rel="noopener noreferrer" title={"Clerkship Evaulations"}><GraphUp /> Clerkship Evaluations</a>)}
-                                            <a href="#" target="_blank" rel="noopener noreferrer"><ListCheck /> General Onboarding</a>
-                                            <a href="#" target="_blank" rel="noopener noreferrer"><FileEarmarkText /> Addl. Onboarding</a>
+                                            {student.periods[0]?.gen_onboarding_link && (<a href={student.periods[0].gen_onboarding_link} target="_blank" rel="noopener noreferrer" title={"General Onboarding Docs"}><ListCheck /> General Onboarding</a>)}
+                                            {student.periods[0]?.addl_onboarding_link && (<a href={student.periods[0].addl_onboarding_link} target="_blank" rel="noopener noreferrer" title={"Additional Onboarding Docs"}><FileEarmarkText /> Addl. Onboarding</a>)}
                                         </div>
                                     )}
                                     {student.periods[0]?.student_schedule && (
@@ -215,10 +212,19 @@ function App() {
                                             {period.specialty && <em>{period.specialty}</em>}
                                             {isAdminView && (
                                                 <div>
-                                                    <a href="#" target="_blank" rel="noopener noreferrer"><ListCheck /> Onboarding</a>
-                                                    <a href="#" target="_blank" rel="noopener noreferrer"><ClipboardData /> CEF</a>
-                                                    <a href="#" target="_blank" rel="noopener noreferrer"><ListCheck /> Patient Log</a>
+                                                    {period.onboarding_link && (
+                                                        <a href={period.onboarding_link} target="_blank" rel="noopener noreferrer" title={"Rotation Onboarding"}><ListCheck/> Onboarding</a>
+                                                    )}
+                                                    {period.cef_url && (
+                                                        <a href={period.cef_url} target="_blank" rel="noopener noreferrer" title={"Clerkship Expectations Form"}><ClipboardData /> CEF</a>
+                                                    )}
+                                                    {period.patient_log_url && (
+                                                        <a href={period.patient_log_url} target="_blank" rel="noopener noreferrer" title={"Patient Logs"}><ListCheck /> Patient Log</a>
+                                                    )}
                                                 </div>
+                                            )}
+                                            {period.average_score && (
+                                                <span className="average-score">{period.average_score}</span>
                                             )}
                                         </td>
                                     );

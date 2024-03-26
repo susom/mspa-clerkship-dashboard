@@ -100,6 +100,26 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
             }
         }
 
+        //GET LINKS FROM OnBoarding
+        $params = array(
+            'project_id' => $this->project_id_onboarding,
+            'return_format' => 'array',
+            'fields' => array("e_mail", "first_name", "last_name"),
+            'events' => array("students_arm_3"),
+            'records' => array_keys($students)
+        );
+        $data       = REDCap::getData($params);
+        foreach ($data as $studentID => $nestedData) {
+            if (is_array($nestedData) && count($nestedData) > 0) {
+                foreach ($nestedData as $eventId => $event) {
+                    $students[$studentID]["gen_onboarding_link"]    = REDCap::getSurveyLink($studentID, "general_onboarding", $eventId, null, $this->project_id_onboarding);
+                    $students[$studentID]["addl_onboarding_link"]   = REDCap::getSurveyLink($studentID, "additional_documentation", $eventId, null, $this->project_id_onboarding);
+                    $students[$studentID]["contact_info_link"]      = REDCap::getSurveyLink($studentID, "contact_info", $eventId, null, $this->project_id_onboarding);
+                }
+            }
+        }
+
+//        $this->emDebug("students", $students);
         return $students;
     }
 
@@ -122,12 +142,12 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
         $siteAddresses      = $this->getClinicalSiteAddresses();
         $rotation_fields    = $this->getRotationInstrumentFields();
         $studentDetails     = $this->getStudentDetails($year);
-
+        $unique_event       = 'rotation_arm_3';
         // Define the parameters for the REDCap::getData function
         $params = array(
             'return_format' => 'array', // Specifies the format of the returned data
             'fields' => $rotation_fields, // Retrieve all fields from the "Rotation" instrument
-            'events' => array("rotation_arm_3")
+            'events' => array($unique_event)
         );
 
         //if only want to show one student
@@ -140,9 +160,14 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
         $students   = array();
         foreach ($data as $recordId => $nestedData) {
             if (is_array($nestedData) && count($nestedData) > 0) {
-                foreach ($nestedData as $event) {
+                foreach ($nestedData as $eventId => $event) {
+
                     // Check if the student_id starts with the specified year
                     if (strpos($event['student_id'], $year) === 0) {
+                        //Per Rotation Links
+                        $cef_link           = REDCap::getSurveyLink($recordId, "clerkship_expectations_form_student", $eventId);
+                        $patient_log_link   = REDCap::getSurveyLink($recordId, "patient_log", $eventId);
+
                         $studentId      = $event['student_id'];
                         $month          = $event['month'];
 
@@ -181,8 +206,13 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
                             }
 
                             if (isset($studentDetails[$studentId])) {
-                                $event['email']         = $studentDetails[$studentId]['email'];
-                                $event['student_url']   = $studentDetails[$studentId]['student_url'];
+                                $event['email']             = $studentDetails[$studentId]['email'];
+                                $event['student_url']       = $studentDetails[$studentId]['student_url'];
+                                $event['cef_url']           = $cef_link;
+                                $event['patient_log_url']   = $patient_log_link;
+                                $event['onboarding_link']   = $studentDetails[$studentId]['contact_info_link'];
+                                $event['gen_onboarding_link'] = $studentDetails[$studentId]['gen_onboarding_link'];
+                                $event['addl_onboarding_link'] = $studentDetails[$studentId]['addl_onboarding_link'];
                             }
 
                             if(empty($_GET["student_id"])){
@@ -198,9 +228,8 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
             }
         }
 
-        //TODO , STUB DATA, REPLACE WITH REAL getDATA fetches
         $students = $this->getStatusData($students, $year);
-//        $this->emLog("getRotationsForYear example", $students);
+//        $this->emLog("getRotationsForYear example", current($students) );
 
         return $students;
     }
@@ -340,6 +369,7 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
             "pes_complete", // preceptor_student_arm_4
             "psr_start_date",
 
+            "average_score",
             "student_evaluation_of_preceptor_complete", // preceptor_student_arm_4
             "internal_medicine_i_complete", // preceptor_student_arm_4
             "internal_medicine_ii_complete", // preceptor_student_arm_4
@@ -415,8 +445,20 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
                     // Store all matches under 'preceptor_evals'
                     $rotation['preceptor_evals'] = $potentialMatches;
 
-                    // If there's at least one match, merge the properties of the first match
-                    $rotation = array_merge($rotation, reset($potentialMatches));
+                    // Calculate the mean of 'average_scores', excluding zeros or empty values
+                    $validScores = array_filter(array_column($potentialMatches, 'average_score'), function($score) {
+                        return !empty($score) && $score > 0;
+                    });
+
+                    if (!empty($validScores)) {
+                        // Calculate the mean of the valid scores
+                        $rotation['average_score'] = array_sum($validScores) / count($validScores);
+                    }
+
+                    // Merge all properties of the first match, except for 'average_score' which we've already calculated
+                    $firstMatch = reset($potentialMatches);
+                    unset($firstMatch['average_score']); // We don't want to overwrite our calculated average
+                    $rotation = array_merge($rotation, $firstMatch);
                 }
             }
             unset($rotation); // Important: unset the last reference to avoid unexpected results
@@ -425,6 +467,7 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
 
         return $studentData;
     }
+
 
     public function flattenClerkshipData($data, &$result, $year) {
         if (is_array($data)) {

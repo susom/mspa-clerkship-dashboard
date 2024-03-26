@@ -72,8 +72,8 @@
             "type": "text"
         },
         {
-            "key": "project-id-patient-log",
-            "name": "<b>Patient Logs Project ID</b><br> Required for the schedule/admin dashboards",
+            "key": "project-id-lecture-evaluations",
+            "name": "<b>Lecture Evaluations Project ID</b><br> Required for the schedule/admin dashboards",
             "required": true,
             "type": "text"
         },
