@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Tooltip } from 'react-tippy';
 import 'react-tippy/dist/tippy.css';
 
-import { Calendar, Envelope, FileEarmarkText, ClipboardData, ListCheck, GraphUp } from 'react-bootstrap-icons';
+import { Link, FileEarmarkText, FileEarmarkPlus, Calendar, Envelope, ClipboardHeart, JournalMedical, PersonRolodex, ClipboardData, ListCheck, GraphUp } from 'react-bootstrap-icons';
 
 import './App.css';
 
@@ -176,26 +176,33 @@ function App() {
                                     <div>{student.name}</div>
                                     {isAdminView && (
                                         <div className={"student_links"}>
-                                            {student.periods[0]?.student_url && (<a href={student.periods[0].student_url} target="_blank" rel="noopener noreferrer" title={"Clerkship Evaulations"}><GraphUp /> Clerkship Evaluations</a>)}
-                                            {student.periods[0]?.gen_onboarding_link && (<a href={student.periods[0].gen_onboarding_link} target="_blank" rel="noopener noreferrer" title={"General Onboarding Docs"}><ListCheck /> General Onboarding</a>)}
-                                            {student.periods[0]?.addl_onboarding_link && (<a href={student.periods[0].addl_onboarding_link} target="_blank" rel="noopener noreferrer" title={"Additional Onboarding Docs"}><FileEarmarkText /> Addl. Onboarding</a>)}
+                                            <p>Student Links</p>
+                                            {student.periods[0]?.student_url && (
+                                                <a href={student.periods[0].student_url} target="_blank"
+                                                   rel="noopener noreferrer" title={"Clerkship Evaulations"}><GraphUp/></a>)}
+                                            {student.periods[0]?.gen_onboarding_link && (
+                                                <a href={student.periods[0].gen_onboarding_link} target="_blank"
+                                                   rel="noopener noreferrer"
+                                                   title={"General Onboarding Docs"}><FileEarmarkText/></a>)}
+                                            {student.periods[0]?.addl_onboarding_link && (
+                                                <a href={student.periods[0].addl_onboarding_link} target="_blank"
+                                                   rel="noopener noreferrer"
+                                                   title={"Additional Onboarding Docs"}><FileEarmarkPlus/></a>)}
                                         </div>
                                     )}
                                     {student.periods[0]?.student_schedule && (
-                                        <>
-                                            <a href={mailtoLink} target="_blank" rel="noopener noreferrer">
-                                                <Envelope /> Mail
-                                            </a>
-                                            or
-                                            <a href={scheduleLink} target="_blank" rel="noopener noreferrer">
-                                                <Calendar /> Link Only
-                                            </a>
-                                        </>
+                                        <div className={`student_links`}>
+                                            <p>Student Schedule</p>
+                                            <a href={mailtoLink} target="_blank" rel="noopener noreferrer"><Envelope /></a>
+                                            <span>|</span>
+                                            <a href={scheduleLink} target="_blank" rel="noopener noreferrer"><Link /></a>
+                                        </div>
                                     )}
                                 </td>
 
                                 {student.periods.map((period, index) => {
                                     const cssClass = getCssClassForRotation(period, isAdminView);
+                                    const hasRotationData = period.location || period.specialty; // Add more checks as needed
                                     return (
                                         <td key={index} className={cssClass}>
                                             <Tooltip
@@ -210,16 +217,22 @@ function App() {
                                                 ))}
                                             </Tooltip>
                                             {period.specialty && <em>{period.specialty}</em>}
-                                            {isAdminView && (
-                                                <div>
+                                            {isAdminView && hasRotationData && (
+                                                <div className={`student_links`}>
+                                                    <p>Rotation Links</p>
                                                     {period.onboarding_link && (
-                                                        <a href={period.onboarding_link} target="_blank" rel="noopener noreferrer" title={"Rotation Onboarding"}><ListCheck/> Onboarding</a>
+                                                        <a href={period.onboarding_link} target="_blank"
+                                                           rel="noopener noreferrer"
+                                                           title={"Rotation Onboarding"}><PersonRolodex/></a>
                                                     )}
                                                     {period.cef_url && (
-                                                        <a href={period.cef_url} target="_blank" rel="noopener noreferrer" title={"Clerkship Expectations Form"}><ClipboardData /> CEF</a>
+                                                        <a href={period.cef_url} target="_blank"
+                                                           rel="noopener noreferrer"
+                                                           title={"Clerkship Expectations Form"}><JournalMedical/></a>
                                                     )}
                                                     {period.patient_log_url && (
-                                                        <a href={period.patient_log_url} target="_blank" rel="noopener noreferrer" title={"Patient Logs"}><ListCheck /> Patient Log</a>
+                                                        <a href={period.patient_log_url} target="_blank"
+                                                           rel="noopener noreferrer" title={"Patient Logs"}><ClipboardHeart/></a>
                                                     )}
                                                 </div>
                                             )}

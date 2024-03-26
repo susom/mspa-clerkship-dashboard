@@ -31,3 +31,23 @@ code {
     background: #922B21;
     color: #FFFFFF;
 }
+
+
+.student_links,
+.student_schedule {
+    margin:15px 0;
+}
+
+.student_links p,
+.student_schedule p {
+    font-size:77%;
+    margin:3px 0; padding:0;
+    color:darkblue;
+    font-weight:bold;
+}
+
+.data-table td .student_links a,
+.data-table td .student_schedule a{
+    display:inline-block;
+    margin:0 3px;
+}
