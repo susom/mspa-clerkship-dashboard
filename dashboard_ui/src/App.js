@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Tooltip } from 'react-tippy';
 import 'react-tippy/dist/tippy.css';
 
-import { Link, FileEarmarkText, FileEarmarkPlus, Calendar, Envelope, ClipboardHeart, JournalMedical, PersonRolodex, ClipboardData, ListCheck, GraphUp } from 'react-bootstrap-icons';
+import { Link, FileEarmarkText, FileEarmarkPlus, PersonCheck, Calendar, Envelope, ClipboardHeart, JournalMedical, PersonRolodex, ClipboardData, ListCheck, GraphUp } from 'react-bootstrap-icons';
 
 import './App.css';
 
@@ -170,26 +170,46 @@ function App() {
                     {students.map((student, studentIndex) => {
                         const scheduleLink  = student.periods[0]?.student_schedule;
                         const mailtoLink    = `mailto:${student.periods[0]?.email}?subject=Your 2024 - 2025 Rotation Schedule&body=See your schedule at: ${encodeURIComponent(scheduleLink)}`;
+                        console.log("fucker", student.periods[0]);
 
                         return(<tr key={studentIndex}>
                                 <td>
                                     <div>{student.name}</div>
                                     {isAdminView && (
-                                        <div className={"student_links"}>
-                                            <p>Student Links</p>
-                                            {student.periods[0]?.student_url && (
-                                                <a href={student.periods[0].student_url} target="_blank"
-                                                   rel="noopener noreferrer" title={"Clerkship Evaulations"}><GraphUp/></a>)}
-                                            {student.periods[0]?.gen_onboarding_link && (
-                                                <a href={student.periods[0].gen_onboarding_link} target="_blank"
-                                                   rel="noopener noreferrer"
-                                                   title={"General Onboarding Docs"}><FileEarmarkText/></a>)}
-                                            {student.periods[0]?.addl_onboarding_link && (
-                                                <a href={student.periods[0].addl_onboarding_link} target="_blank"
-                                                   rel="noopener noreferrer"
-                                                   title={"Additional Onboarding Docs"}><FileEarmarkPlus/></a>)}
-                                        </div>
+                                        (student.periods[0]?.student_url || student.periods[0]?.le_student_url) && (
+                                            <div className={"student_links"}>
+                                                <p>Evaluation Links</p>
+                                                {student.periods[0]?.student_url && (
+                                                    <a href={student.periods[0].student_url} target="_blank"
+                                                       rel="noopener noreferrer"
+                                                       title={"Clerkship Evaulations"}><PersonCheck/></a>
+                                                )}
+                                                {student.periods[0]?.le_student_url && (
+                                                    <a href={student.periods[0].le_student_url} target="_blank"
+                                                       rel="noopener noreferrer"
+                                                       title={"Individual Lecture Evaluations"}><GraphUp/></a>
+                                                )}
+                                            </div>
+                                        )
                                     )}
+                                    {isAdminView && (
+                                        (student.periods[0]?.gen_onboarding_link || student.periods[0]?.addl_onboarding_link) && (
+                                            <div className={"student_links"}>
+                                                <p>Onboarding Links</p>
+                                                {student.periods[0]?.gen_onboarding_link && (
+                                                    <a href={student.periods[0].gen_onboarding_link} target="_blank"
+                                                       rel="noopener noreferrer"
+                                                       title={"General Onboarding Docs"}><FileEarmarkText/></a>
+                                                )}
+                                                {student.periods[0]?.addl_onboarding_link && (
+                                                    <a href={student.periods[0].addl_onboarding_link} target="_blank"
+                                                       rel="noopener noreferrer"
+                                                       title={"Additional Onboarding Docs"}><FileEarmarkPlus/></a>
+                                                )}
+                                            </div>
+                                        )
+                                    )}
+
                                     {student.periods[0]?.student_schedule && (
                                         <div className={`student_links`}>
                                             <p>Student Schedule</p>

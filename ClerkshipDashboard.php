@@ -14,7 +14,7 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
     private $default_year;
     private $default_rotation_offset;
     private $project_id_mspa;
-    private $project_id_patient_log;
+    private $project_id_lecture_evaluations;
     private $project_id_onboarding;
 
     public function __construct() {
@@ -87,7 +87,10 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
 
         // Retrieve data from REDCap
         $data       = REDCap::getData($params);
-        $students   = array();
+
+        $students       = array();
+        $filterLogics   = array();
+        $email_lookup   = array();
         foreach($data as $student_key => $nested){
             $studentDetails = current($nested);
 
@@ -97,6 +100,25 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
                     continue;
                 }
                 $students[$student_key] = $studentDetails;
+                $email_lookup[$studentDetails["email"]] = $student_key;
+                $filterLogics[] = "[email] = '".$studentDetails['email'] ."'";
+            }
+        }
+
+        //NOW GET THE individual Eval link from Eval Project
+        $params         = array(
+            'project_id' => $this->project_id_lecture_evaluations,
+            'return_format' => 'array',
+            'fields' => array("last_name", "first_name", "email", "student_url"),
+            "events" => array("student_arm_2"),
+            'filterLogic' => implode(" || ", $filterLogics)
+        );
+        $data = REDCap::getData($params);
+        foreach ($data as $nestedData) {
+            if (is_array($nestedData) && count($nestedData) > 0) {
+                foreach ($nestedData as $eventId => $event) {
+                    $students[$email_lookup[$event["email"]]]["le_student_url"] = $event["student_url"];
+                }
             }
         }
 
@@ -119,7 +141,6 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
             }
         }
 
-//        $this->emDebug("students", $students);
         return $students;
     }
 
@@ -131,7 +152,7 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
         $this->default_year             = $this->getProjectSetting("project-default-rotation-year");
         $this->default_rotation_offset  = $this->getProjectSetting("project-default-rotation-offset");
         $this->project_id_mspa          = $this->getProjectSetting("project-id-mspa");
-        $this->project_id_patient_log   = $this->getProjectSetting("project-id-patient-log");
+        $this->project_id_lecture_evaluations   = $this->getProjectSetting("project-id-lecture-evaluations");
         $this->project_id_onboarding    = $this->getProjectSetting("project-id-onboarding");
 
         if ($year === null) {
@@ -208,6 +229,7 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
                             if (isset($studentDetails[$studentId])) {
                                 $event['email']             = $studentDetails[$studentId]['email'];
                                 $event['student_url']       = $studentDetails[$studentId]['student_url'];
+                                $event['le_student_url']    = $studentDetails[$studentId]['le_student_url'];
                                 $event['cef_url']           = $cef_link;
                                 $event['patient_log_url']   = $patient_log_link;
                                 $event['onboarding_link']   = $studentDetails[$studentId]['contact_info_link'];
@@ -227,7 +249,6 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
                 }
             }
         }
-
         $students = $this->getStatusData($students, $year);
 //        $this->emLog("getRotationsForYear example", current($students) );
 
@@ -242,13 +263,6 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
 
             //NOW LETS GET ALL THE CLERKSHIP EVAL .. PER ROTATION?
             $studentData = $this->getClerkShipEvalData($studentData, $year);
-
-            //NOW CREATE THE LINKS TO ADD TO ROTATIONS
-            $onboardingProjectFields = array(
-                "contact_info",
-                "general_onboarding",
-                "additional_documentation"
-            );
         }
 
         return $studentData;
@@ -467,7 +481,6 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
 
         return $studentData;
     }
-
 
     public function flattenClerkshipData($data, &$result, $year) {
         if (is_array($data)) {
