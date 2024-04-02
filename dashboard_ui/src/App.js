@@ -7,9 +7,11 @@ import { Link, FileEarmarkText, FileEarmarkPlus, PersonCheck, Calendar, Envelope
 import './App.css';
 
 const getCssClassForRotation = (rotationData, isAdminView) => {
-    if (!isAdminView) {
-        return ''; // Non-admins do not see colors
-    }
+    // Define an object to store the class and variables
+    let result = {
+        className: '',
+        data: {}
+    };
 
     // Deconstruct only the properties we need
     const {
@@ -59,11 +61,6 @@ const getCssClassForRotation = (rotationData, isAdminView) => {
         specialty === 'SURG' ||
         specialty === 'ELV'; // These specialties don't require Aquifer cases
 
-    // Apply logic based on conditions document
-    if (site_confirmation_complete === '2') {
-        return 'bg_complete'; // Grey
-    }
-
     // console.log('bg_rotationend:' + rotationData.start_date, rotationEnd < today,  student_evaluation_of_preceptor_complete, hasCompletePreceptorEvaluation, average_score, communication_forms_complete, hasCompleteAquiferCase, patient_log_complete, fail_eor);
     if (rotationEnd < today &&
         student_evaluation_of_preceptor_complete === '2' &&
@@ -74,7 +71,17 @@ const getCssClassForRotation = (rotationData, isAdminView) => {
         patient_log_complete === '2' &&
         fail_eor === '0'
     ) {
-        return 'bg_rotationend'; // Green
+        result.className = 'bg_rotationend'; //green
+        result.data = {
+            "rotationEnd < today": rotationEnd < today,
+            "student eval preceptor complete": student_evaluation_of_preceptor_complete,
+            "hasCompletePreceptorEvaluation" : hasCompletePreceptorEvaluation,
+            "hasCompleteAquiferCase" : hasCompleteAquiferCase,
+            "patient_log_complete" : patient_log_complete,
+            "average_score < 3" : average_score,
+            "communication_forms_complete" : communication_forms_complete,
+            "fail_eor" : fail_eor
+        };
     }
 
     console.log('bg_rotationongoing:' + rotationData.start_date, startDate < today,  student_evaluation_of_preceptor_complete, hasCompletePreceptorEvaluation, hasCompleteAquiferCase, patient_log_complete, average_score, communication_forms_complete, fail_eor);
@@ -86,22 +93,58 @@ const getCssClassForRotation = (rotationData, isAdminView) => {
         (average_score < 3 || communication_forms_complete !== '2') )
         || (fail_eor === '1')
     ) {
-        return 'bg_rotationongoing'; // Yellow
+        result.className = 'bg_rotationongoing';// Yellow
+        result.data = {
+            "startDate < today": startDate < today,
+            "student eval preceptor complete": student_evaluation_of_preceptor_complete,
+            "hasCompletePreceptorEvaluation" : hasCompletePreceptorEvaluation,
+            "hasCompleteAquiferCase" : hasCompleteAquiferCase,
+            "patient_log_complete" : patient_log_complete,
+            "average_score < 3" : average_score,
+            "communication_forms_complete" : communication_forms_complete,
+            "fail_eor" : fail_eor
+        };
     }
 
-    console.log('bg_rotationstart:' + rotationData.start_date, startDate < today,  student_evaluation_of_preceptor_complete, hasCompletePreceptorEvaluation, hasCompleteAquiferCase, patient_log_complete, eor_repeat_score, eor_repeat_score);
-    if (startDate < today &&
+    console.log('bg_rotationstart:' + rotationData.start_date,
+        startDate <= today,
+        student_evaluation_of_preceptor_complete,
+        hasCompletePreceptorEvaluation,
+        hasCompleteAquiferCase,
+        patient_log_complete,
+        eor_repeat_score);
+    if (startDate <= today &&
         ( student_evaluation_of_preceptor_complete !== '2' ||
         !hasCompletePreceptorEvaluation ||
         !hasCompleteAquiferCase ||
         patient_log_complete !== '2' ||
         (eor_repeat_score && eor_repeat_score < 380) )
     ) {
-        return 'bg_rotationstart'; // Red
+        result.className = 'bg_rotationstart';// Red
+        result.data = {
+            "startDate <= today": startDate <= today,
+            "student eval preceptor complete": student_evaluation_of_preceptor_complete,
+            "hasCompletePreceptorEvaluation" : hasCompletePreceptorEvaluation,
+            "hasCompleteAquiferCase" : hasCompleteAquiferCase,
+            "patient_log_complete" : patient_log_complete,
+            "eor_repeat_score < 380" : eor_repeat_score
+        };
     }
 
+    // Apply logic based on conditions document
+    if (site_confirmation_complete === '2' && startDate < today) {
+        result.className = 'bg_complete';// Grey
+        result.data = {
+            "site confirmation complete": site_confirmation_complete,
+            "startDate < today": startDate < today,
+        };
+    }
 
-    return ''; // Default to no color coding
+    if (!isAdminView) {
+        result.className = '';
+    }
+
+    return result; // Default to no color coding
 };
 
 // Function to extract specialty abbreviation from record_id
@@ -113,12 +156,29 @@ const getSpecialtyFromRecordId = (recordId) => {
 function App() {
     const [periodDates, setPeriodDates] = useState({});
     const [studentsData, setStudentsData] = useState({});
+    const [criteriaVisibility, setCriteriaVisibility] = useState({}); // State object to control the visibility of each criteria list
+
+    const toggleCriteriaVisibility = (index) => {
+        setCriteriaVisibility(prev => ({
+            ...prev,
+            [index]: !prev[index] // Toggle the boolean value for the index
+        }));
+    };
 
     useEffect(() => {
-        // Assuming these values are present and set by PHP on initial page load
         setPeriodDates(window.periodDates || {});
         setStudentsData(window.studentsData || {});
-    }, []); // Empty dependency array ensures this effect only runs once on mount
+
+        // Initialize criteria visibility state
+        const initialVisibility = {};
+        Object.keys(window.studentsData || {}).forEach((studentKey, studentIndex) => {
+            window.studentsData[studentKey].forEach((_, periodIndex) => {
+                initialVisibility[`${studentIndex}_${periodIndex}`] = false;
+            });
+        });
+        setCriteriaVisibility(initialVisibility);
+    }, []);
+
 
     const queryParams = new URLSearchParams(window.location.search);
     const isAdminView = queryParams.get('view') === 'admin';
@@ -170,44 +230,40 @@ function App() {
                     {students.map((student, studentIndex) => {
                         const scheduleLink  = student.periods[0]?.student_schedule;
                         const mailtoLink    = `mailto:${student.periods[0]?.email}?subject=Your 2024 - 2025 Rotation Schedule&body=See your schedule at: ${encodeURIComponent(scheduleLink)}`;
-                        console.log("fucker", student.periods[0]);
+                        console.log("student data", student.periods[0]);
 
                         return(<tr key={studentIndex}>
                                 <td>
                                     <div>{student.name}</div>
-                                    {isAdminView && (
-                                        (student.periods[0]?.student_url || student.periods[0]?.le_student_url) && (
-                                            <div className={"student_links"}>
-                                                <p>Evaluation Links</p>
-                                                {student.periods[0]?.student_url && (
-                                                    <a href={student.periods[0].student_url} target="_blank"
-                                                       rel="noopener noreferrer"
-                                                       title={"Clerkship Evaulations"}><PersonCheck/></a>
-                                                )}
-                                                {student.periods[0]?.le_student_url && (
-                                                    <a href={student.periods[0].le_student_url} target="_blank"
-                                                       rel="noopener noreferrer"
-                                                       title={"Individual Lecture Evaluations"}><GraphUp/></a>
-                                                )}
-                                            </div>
-                                        )
+                                    {(student.periods[0]?.student_url || student.periods[0]?.le_student_url) && (
+                                        <div className={"student_links"}>
+                                            <p>Evaluation Links</p>
+                                            {student.periods[0]?.student_url && (
+                                                <a href={student.periods[0].student_url} target="_blank"
+                                                   rel="noopener noreferrer"
+                                                   title={"Clerkship Evaulations"}><PersonCheck/></a>
+                                            )}
+                                            {student.periods[0]?.le_student_url && (
+                                                <a href={student.periods[0].le_student_url} target="_blank"
+                                                   rel="noopener noreferrer"
+                                                   title={"Individual Lecture Evaluations"}><GraphUp/></a>
+                                            )}
+                                        </div>
                                     )}
-                                    {isAdminView && (
-                                        (student.periods[0]?.gen_onboarding_link || student.periods[0]?.addl_onboarding_link) && (
-                                            <div className={"student_links"}>
-                                                <p>Onboarding Links</p>
-                                                {student.periods[0]?.gen_onboarding_link && (
-                                                    <a href={student.periods[0].gen_onboarding_link} target="_blank"
-                                                       rel="noopener noreferrer"
-                                                       title={"General Onboarding Docs"}><FileEarmarkText/></a>
-                                                )}
-                                                {student.periods[0]?.addl_onboarding_link && (
-                                                    <a href={student.periods[0].addl_onboarding_link} target="_blank"
-                                                       rel="noopener noreferrer"
-                                                       title={"Additional Onboarding Docs"}><FileEarmarkPlus/></a>
-                                                )}
-                                            </div>
-                                        )
+                                    {(student.periods[0]?.gen_onboarding_link || student.periods[0]?.addl_onboarding_link) && (
+                                        <div className={"student_links"}>
+                                            <p>Onboarding Links</p>
+                                            {student.periods[0]?.gen_onboarding_link && (
+                                                <a href={student.periods[0].gen_onboarding_link} target="_blank"
+                                                   rel="noopener noreferrer"
+                                                   title={"General Onboarding Docs"}><FileEarmarkText/></a>
+                                            )}
+                                            {student.periods[0]?.addl_onboarding_link && (
+                                                <a href={student.periods[0].addl_onboarding_link} target="_blank"
+                                                   rel="noopener noreferrer"
+                                                   title={"Additional Onboarding Docs"}><FileEarmarkPlus/></a>
+                                            )}
+                                        </div>
                                     )}
 
                                     {student.periods[0]?.student_schedule && (
@@ -221,10 +277,12 @@ function App() {
                                 </td>
 
                                 {student.periods.map((period, index) => {
-                                    const cssClass = getCssClassForRotation(period, isAdminView);
+                                    const cssInfo = getCssClassForRotation(period, isAdminView);
                                     const hasRotationData = period.location || period.specialty; // Add more checks as needed
+                                    const showCriteria = criteriaVisibility[`${studentIndex}_${index}`]; // This should be the state that controls visibility
+
                                     return (
-                                        <td key={index} className={cssClass}>
+                                        <td key={index} className={cssInfo.className}>
                                             <Tooltip
                                                 title={period.siteAddress}
                                                 position="top"
@@ -237,7 +295,7 @@ function App() {
                                                 ))}
                                             </Tooltip>
                                             {period.specialty && <em>{period.specialty}</em>}
-                                            {isAdminView && hasRotationData && (
+                                            {hasRotationData && (
                                                 <div className={`student_links`}>
                                                     <p>Rotation Links</p>
                                                     {period.onboarding_link && (
@@ -253,6 +311,31 @@ function App() {
                                                     {period.patient_log_url && (
                                                         <a href={period.patient_log_url} target="_blank"
                                                            rel="noopener noreferrer" title={"Patient Logs"}><ClipboardHeart/></a>
+                                                    )}
+                                                </div>
+                                            )}
+                                            {(isAdminView && hasRotationData && cssInfo.data ) && (
+                                                <div className={`student_links`}>
+                                                    <p
+                                                        onClick={() => toggleCriteriaVisibility(`${studentIndex}_${index}`)}
+                                                        className={`status-criteria-toggle ${criteriaVisibility[`${studentIndex}_${index}`] ? 'expanded' : ''}`}
+                                                    >
+                                                        Status Criteria
+                                                    </p>
+
+                                                    {showCriteria && (
+                                                        <ul className="status_criteria">
+                                                            {Object.entries(cssInfo.data).map(([key, value]) => (
+                                                                <li key={key}>
+                                                                    <a href="#!" onClick={(e) => {
+                                                                        e.preventDefault();
+                                                                        // Define your link click handler here
+                                                                    }}>
+                                                                        {`${key}: ${value}`}
+                                                                    </a>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
                                                     )}
                                                 </div>
                                             )}

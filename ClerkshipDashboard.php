@@ -256,14 +256,11 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
     }
 
     public function getStatusData($studentData, $year){
-        //THIS WILL AUGMENT THE STUDENTS DATA FOR ADMIN "view"
-        if ($_GET['view'] === 'admin') {
-            //NOW LETS GET ALL THE MSPA GRADES (aquifier vars) and add them to the student rotations
-            $studentData = $this->getMSPAProjectData($studentData);
+        //NOW LETS GET ALL THE MSPA GRADES (aquifier vars) and add them to the student rotations
+        $studentData = $this->getMSPAProjectData($studentData);
 
-            //NOW LETS GET ALL THE CLERKSHIP EVAL .. PER ROTATION?
-            $studentData = $this->getClerkShipEvalData($studentData, $year);
-        }
+        //NOW LETS GET ALL THE CLERKSHIP EVAL .. PER ROTATION?
+        $studentData = $this->getClerkShipEvalData($studentData, $year);
 
         return $studentData;
     }

@@ -28,7 +28,7 @@ code {
 }
 
 .bg_rotationstart {
-    background: #922B21;
+    background: #efa099;
     color: #FFFFFF;
 }
 
@@ -50,4 +50,24 @@ code {
 .data-table td .student_schedule a{
     display:inline-block;
     margin:0 3px;
+}
+
+.status-criteria-toggle::after {
+    content: " +";
+    display: inline;
+}
+
+.status-criteria-toggle.expanded::after {
+    content: " -";
+}
+
+.data-table td  .status_criteria {
+    margin:0; padding:0;
+    text-align:left;
+    list-style:none;
+
+}
+.data-table td  .status_criteria li a {
+    color:#333;
+    font-size:65%;
 }
