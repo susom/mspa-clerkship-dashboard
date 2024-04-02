@@ -71,3 +71,8 @@ code {
     color:#333;
     font-size:65%;
 }
+
+.data-table td  .status_criteria li a.highlight_critera {
+    color:green;
+    font-weight:bold;
+}

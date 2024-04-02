@@ -9,71 +9,96 @@ import './App.css';
 const getCssClassForRotation = (rotationData, isAdminView) => {
     let result = {
         className: '',
+        criteria: [],
         data: {}
     };
 
     const {
-        site_confirmation_complete: site_confirmation_complete,
-        student_evaluation_of_preceptor_complete: studentEvalComp,
+        site_confirmation_complete,
+        student_evaluation_of_preceptor_complete,
         preceptor_evals = [],
-        communication_forms_complete: commFormsComp,
-        patient_log_complete: patientLogComp,
-        fail_eor: failEor,
-        eor_repeat_score: eorRepeatScore,
-        start_date: startDateStr,
-        average_score: avgScore,
-        aquifer302,
-        aquifer304,
-        aquifer311,
-        aquifer_other,
+        communication_forms_complete,
+        patient_log_complete,
+        fail_eor,
+        eor_repeat_score,
+        start_date,
+        average_score,
+        aquifer302 = '',
+        aquifer304 = '',
+        aquifer311 = '',
+        aquifer_other = '',
         specialty,
     } = rotationData;
 
     const today = new Date();
-    const startDate = new Date(startDateStr);
+    const startDate = new Date(start_date);
     const rotationEnd = new Date(startDate);
-    rotationEnd.setDate(rotationEnd.getDate() + 17);
+    rotationEnd.setDate(rotationEnd.getDate() + 17); // Add 17 days to start date
 
-    const preceptorEvalComp = preceptor_evals.some(evaluation => Object.values(evaluation).includes('2'));
-    const aquiferCaseComp = ['1', 'SURG', 'ELV'].includes(specialty) || [aquifer302, aquifer304, aquifer311, aquifer_other].includes('1');
+    // Keep the preceptor evaluations check as is
+    const hasCompletePreceptorEvaluation = preceptor_evals.some(evaluation =>
+        evaluation.internal_medicine_i_complete === '2' ||
+        evaluation.internal_medicine_ii_complete === '2' ||
+        evaluation.primary_care_i_complete === '2' ||
+        evaluation.primary_care_ii_complete === '2' ||
+        evaluation.pediatrics_complete === '2' ||
+        evaluation.surgery_complete === '2' ||
+        evaluation.emergency_medicine_complete === '2' ||
+        evaluation.womens_health_complete === '2' ||
+        evaluation.behavioral_medicine_complete === '2' ||
+        evaluation.electives_complete === '2'
+    );
 
+    // Check for Aquifer case completion
+    const hasCompleteAquiferCase = aquifer302 === '1' ||
+        aquifer304 === '1' ||
+        aquifer311 === '1' ||
+        aquifer_other === '1' ||
+        specialty === 'SURG' ||
+        specialty === 'ELV'; // These specialties don't require Aquifer cases
+
+    // Flag definitions
     let flags = {
         rotationEndPassed: rotationEnd < today,
-        studentEvalComp: studentEvalComp === '2',
-        preceptorEvalComp,
-        aquiferCaseComp,
-        patientLogComp: patientLogComp === '2',
-        avgScoreHigh: avgScore > 3,
-        commFormsComp: commFormsComp === '2',
-        noFailEor: failEor === '0',
-        eorRepeatScoreLow: eorRepeatScore && eorRepeatScore < 380,
+        studentEvalComp: student_evaluation_of_preceptor_complete === '2',
+        preceptorEvalComp: hasCompletePreceptorEvaluation,
+        aquiferCaseComp: hasCompleteAquiferCase,
+        patientLogComp: patient_log_complete === '2',
+        avgScoreHigh: average_score > 3,
+        commFormsComp: communication_forms_complete === '2',
+        noFailEor: fail_eor === '0',
+        eorRepeatScoreLow: eor_repeat_score && eor_repeat_score < 380,
         siteConfirmed: site_confirmation_complete === '2',
         startDatePassed: startDate < today,
-        startDateOrEqual: startDate <= today
+        startDateOrEqual: startDate <= today,
     };
 
     if (flags.rotationEndPassed && flags.studentEvalComp && flags.preceptorEvalComp && flags.aquiferCaseComp &&
         flags.patientLogComp && flags.avgScoreHigh && flags.commFormsComp && flags.noFailEor) {
-        result.className = 'bg_rotationend'; // Green
+        result.className = 'bg_rotationend';
+        result.criteria.push('rotationEndPassed', 'studentEvalComp', 'preceptorEvalComp', 'aquiferCaseComp', 'patientLogComp', 'avgScoreHigh', 'commFormsComp', 'noFailEor');
     } else if (flags.startDatePassed && ((flags.studentEvalComp && flags.preceptorEvalComp && flags.aquiferCaseComp &&
-        flags.patientLogComp && (!flags.avgScoreHigh || !flags.commFormsComp)) || failEor === '1')) {
-        result.className = 'bg_rotationongoing'; // Yellow
+        flags.patientLogComp && (!flags.avgScoreHigh || !flags.commFormsComp)) || flags.noFailEor)) {
+        result.className = 'bg_rotationongoing';
+        result.criteria.push('startDatePassed', 'studentEvalComp', 'preceptorEvalComp', 'aquiferCaseComp', 'patientLogComp', 'avgScoreHigh', 'commFormsComp', 'noFailEor');
     } else if (flags.startDateOrEqual && (!flags.studentEvalComp || !flags.preceptorEvalComp || !flags.aquiferCaseComp ||
         !flags.patientLogComp || flags.eorRepeatScoreLow)) {
-        result.className = 'bg_rotationstart'; // Red, using `startDateOrEqual` for this condition
+        result.className = 'bg_rotationstart';
+        result.criteria.push('startDateOrEqual', 'studentEvalComp', 'preceptorEvalComp', 'aquiferCaseComp', 'patientLogComp', 'eorRepeatScoreLow');
     } else if (flags.siteConfirmed && flags.startDatePassed) {
-        result.className = 'bg_complete'; // Grey
+        result.className = 'bg_complete';
+        result.criteria.push('siteConfirmed', 'startDatePassed');
     }
 
     if (!isAdminView) {
         result.className = '';
+        result.criteria = [];
     }
 
     result.data = flags; // Consolidated condition checks for easy reference
 
     return result;
 };
-
 
 
 // Function to extract specialty abbreviation from record_id
@@ -256,7 +281,7 @@ function App() {
                                                         <ul className="status_criteria">
                                                             {Object.entries(cssInfo.data).map(([key, value]) => (
                                                                 <li key={key}>
-                                                                    <a href="#!" onClick={(e) => {
+                                                                    <a href="#!" className={cssInfo.criteria.includes(key) ? 'highlight_critera' : ''} onClick={(e) => {
                                                                         e.preventDefault();
                                                                         // Define your link click handler here
                                                                     }}>
