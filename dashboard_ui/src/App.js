@@ -7,145 +7,74 @@ import { Link, FileEarmarkText, FileEarmarkPlus, PersonCheck, Calendar, Envelope
 import './App.css';
 
 const getCssClassForRotation = (rotationData, isAdminView) => {
-    // Define an object to store the class and variables
     let result = {
         className: '',
         data: {}
     };
 
-    // Deconstruct only the properties we need
     const {
-        site_confirmation_complete,
-        student_evaluation_of_preceptor_complete,
+        site_confirmation_complete: site_confirmation_complete,
+        student_evaluation_of_preceptor_complete: studentEvalComp,
         preceptor_evals = [],
-        communication_forms_complete,
-        patient_log_complete,
-        fail_eor,
-        eor_repeat_score,
-        start_date,
+        communication_forms_complete: commFormsComp,
+        patient_log_complete: patientLogComp,
+        fail_eor: failEor,
+        eor_repeat_score: eorRepeatScore,
+        start_date: startDateStr,
+        average_score: avgScore,
+        aquifer302,
+        aquifer304,
+        aquifer311,
+        aquifer_other,
         specialty,
-        average_score,
-
-        // Assuming '1' signifies a complete Aquifer case and '2' signifies a complete preceptor evaluation
-        aquifer302 = '',
-        aquifer304 = '',
-        aquifer311 = '',
-        aquifer_other = '',
     } = rotationData;
 
-    // Convert start_date to Date object
     const today = new Date();
-    const startDate = new Date(start_date);
+    const startDate = new Date(startDateStr);
     const rotationEnd = new Date(startDate);
-    rotationEnd.setDate(rotationEnd.getDate() + 17); // Add 17 days to start date
+    rotationEnd.setDate(rotationEnd.getDate() + 17);
 
-    // Determine if any preceptor evaluations are complete
-    const hasCompletePreceptorEvaluation = preceptor_evals.some(evaluation =>
-        evaluation.internal_medicine_i_complete === '2' ||
-        evaluation.internal_medicine_ii_complete === '2' ||
-        evaluation.primary_care_i_complete === '2' ||
-        evaluation.primary_care_ii_complete === '2' ||
-        evaluation.pediatrics_complete === '2' ||
-        evaluation.surgery_complete === '2' ||
-        evaluation.emergency_medicine_complete === '2' ||
-        evaluation.womens_health_complete === '2' ||
-        evaluation.behavioral_medicine_complete === '2' ||
-        evaluation.electives_complete === '2'
-    );
+    const preceptorEvalComp = preceptor_evals.some(evaluation => Object.values(evaluation).includes('2'));
+    const aquiferCaseComp = ['1', 'SURG', 'ELV'].includes(specialty) || [aquifer302, aquifer304, aquifer311, aquifer_other].includes('1');
 
-    // Determine if any Aquifer cases are complete
-    const hasCompleteAquiferCase = aquifer302 === '1' ||
-        aquifer304 === '1' ||
-        aquifer311 === '1' ||
-        aquifer_other === '1' ||
-        specialty === 'SURG' ||
-        specialty === 'ELV'; // These specialties don't require Aquifer cases
+    let flags = {
+        rotationEndPassed: rotationEnd < today,
+        studentEvalComp: studentEvalComp === '2',
+        preceptorEvalComp,
+        aquiferCaseComp,
+        patientLogComp: patientLogComp === '2',
+        avgScoreHigh: avgScore > 3,
+        commFormsComp: commFormsComp === '2',
+        noFailEor: failEor === '0',
+        eorRepeatScoreLow: eorRepeatScore && eorRepeatScore < 380,
+        siteConfirmed: site_confirmation_complete === '2',
+        startDatePassed: startDate < today,
+        startDateOrEqual: startDate <= today
+    };
 
-    // console.log('bg_rotationend:' + rotationData.start_date, rotationEnd < today,  student_evaluation_of_preceptor_complete, hasCompletePreceptorEvaluation, average_score, communication_forms_complete, hasCompleteAquiferCase, patient_log_complete, fail_eor);
-    if (rotationEnd < today &&
-        student_evaluation_of_preceptor_complete === '2' &&
-        hasCompletePreceptorEvaluation &&
-        average_score > 3 &&
-        communication_forms_complete === '2' &&
-        hasCompleteAquiferCase &&
-        patient_log_complete === '2' &&
-        fail_eor === '0'
-    ) {
-        result.className = 'bg_rotationend'; //green
-        result.data = {
-            "rotationEnd < today": rotationEnd < today,
-            "student eval preceptor complete": student_evaluation_of_preceptor_complete,
-            "hasCompletePreceptorEvaluation" : hasCompletePreceptorEvaluation,
-            "hasCompleteAquiferCase" : hasCompleteAquiferCase,
-            "patient_log_complete" : patient_log_complete,
-            "average_score < 3" : average_score,
-            "communication_forms_complete" : communication_forms_complete,
-            "fail_eor" : fail_eor
-        };
-    }
-
-    console.log('bg_rotationongoing:' + rotationData.start_date, startDate < today,  student_evaluation_of_preceptor_complete, hasCompletePreceptorEvaluation, hasCompleteAquiferCase, patient_log_complete, average_score, communication_forms_complete, fail_eor);
-    if (startDate < today &&
-        ( student_evaluation_of_preceptor_complete === '2' &&
-        hasCompletePreceptorEvaluation &&
-        hasCompleteAquiferCase &&
-        patient_log_complete === '2' &&
-        (average_score < 3 || communication_forms_complete !== '2') )
-        || (fail_eor === '1')
-    ) {
-        result.className = 'bg_rotationongoing';// Yellow
-        result.data = {
-            "startDate < today": startDate < today,
-            "student eval preceptor complete": student_evaluation_of_preceptor_complete,
-            "hasCompletePreceptorEvaluation" : hasCompletePreceptorEvaluation,
-            "hasCompleteAquiferCase" : hasCompleteAquiferCase,
-            "patient_log_complete" : patient_log_complete,
-            "average_score < 3" : average_score,
-            "communication_forms_complete" : communication_forms_complete,
-            "fail_eor" : fail_eor
-        };
-    }
-
-    console.log('bg_rotationstart:' + rotationData.start_date,
-        startDate <= today,
-        student_evaluation_of_preceptor_complete,
-        hasCompletePreceptorEvaluation,
-        hasCompleteAquiferCase,
-        patient_log_complete,
-        eor_repeat_score);
-    if (startDate <= today &&
-        ( student_evaluation_of_preceptor_complete !== '2' ||
-        !hasCompletePreceptorEvaluation ||
-        !hasCompleteAquiferCase ||
-        patient_log_complete !== '2' ||
-        (eor_repeat_score && eor_repeat_score < 380) )
-    ) {
-        result.className = 'bg_rotationstart';// Red
-        result.data = {
-            "startDate <= today": startDate <= today,
-            "student eval preceptor complete": student_evaluation_of_preceptor_complete,
-            "hasCompletePreceptorEvaluation" : hasCompletePreceptorEvaluation,
-            "hasCompleteAquiferCase" : hasCompleteAquiferCase,
-            "patient_log_complete" : patient_log_complete,
-            "eor_repeat_score < 380" : eor_repeat_score
-        };
-    }
-
-    // Apply logic based on conditions document
-    if (site_confirmation_complete === '2' && startDate < today) {
-        result.className = 'bg_complete';// Grey
-        result.data = {
-            "site confirmation complete": site_confirmation_complete,
-            "startDate < today": startDate < today,
-        };
+    if (flags.rotationEndPassed && flags.studentEvalComp && flags.preceptorEvalComp && flags.aquiferCaseComp &&
+        flags.patientLogComp && flags.avgScoreHigh && flags.commFormsComp && flags.noFailEor) {
+        result.className = 'bg_rotationend'; // Green
+    } else if (flags.startDatePassed && ((flags.studentEvalComp && flags.preceptorEvalComp && flags.aquiferCaseComp &&
+        flags.patientLogComp && (!flags.avgScoreHigh || !flags.commFormsComp)) || failEor === '1')) {
+        result.className = 'bg_rotationongoing'; // Yellow
+    } else if (flags.startDateOrEqual && (!flags.studentEvalComp || !flags.preceptorEvalComp || !flags.aquiferCaseComp ||
+        !flags.patientLogComp || flags.eorRepeatScoreLow)) {
+        result.className = 'bg_rotationstart'; // Red, using `startDateOrEqual` for this condition
+    } else if (flags.siteConfirmed && flags.startDatePassed) {
+        result.className = 'bg_complete'; // Grey
     }
 
     if (!isAdminView) {
         result.className = '';
     }
 
-    return result; // Default to no color coding
+    result.data = flags; // Consolidated condition checks for easy reference
+
+    return result;
 };
+
+
 
 // Function to extract specialty abbreviation from record_id
 const getSpecialtyFromRecordId = (recordId) => {
