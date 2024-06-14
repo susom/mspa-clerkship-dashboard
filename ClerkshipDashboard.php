@@ -298,6 +298,7 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
             "aquifer304",
             "aquifer311",
             "aquifer_other",
+            "eor_raw_score",
             "fail_eor",
             "eor_repeat_score"
         );
@@ -318,10 +319,11 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
             "aquifer304" => null,
             "aquifer311" => null,
             "aquifer_other" => null,
+            "eor_raw_score" => null,
             "fail_eor" => null,
             "eor_repeat_score" => null
         ];
-        $mspa_keys_to_keep = ["aquifer302", "aquifer304", "aquifer311", "aquifer_other", "fail_eor", "eor_repeat_score"];
+        $mspa_keys_to_keep = ["aquifer302", "aquifer304", "aquifer311", "aquifer_other", "fail_eor", "eor_raw_score", "eor_repeat_score"];
 
         //NOW LOOP THROUGH THE STUDENT DATA AN ALL THE ROTATION INFO AND ADD ON ALL THE MSPA GRADES DATA
         foreach($studentData as $student_rotation_id => &$rotations){
@@ -403,7 +405,6 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
 
         // Retrieve and store the data
         $allClerkshipEvalData = REDCap::getData($params);
-
         $just_this_year = [];
         foreach($allClerkshipEvalData as $record_id => $array_structure){
             if(strpos($record_id,$year) < 0){

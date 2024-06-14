@@ -13,6 +13,8 @@ const getCssClassForRotation = (rotationData, isAdminView) => {
         preceptor_evals = [],
         communication_forms_complete,
         patient_log_complete,
+        eor_final_score,
+        eor_raw_score,
         fail_eor,
         eor_repeat_score,
         start_date,
@@ -24,6 +26,7 @@ const getCssClassForRotation = (rotationData, isAdminView) => {
         specialty,
     } = rotationData;
 
+    console.log("i am in gtCssClassforRotation where is average_score", average_score);
     const today = new Date();
     const startDate = new Date(start_date);
     const rotationEnd = new Date(startDate);
@@ -36,31 +39,34 @@ const getCssClassForRotation = (rotationData, isAdminView) => {
 
     const hasCompleteAquiferCase = ['aquifer302', 'aquifer304', 'aquifer311', 'aquifer_other'].some(key => rotationData[key] === '1') || ['SURG', 'ELV'].includes(specialty);
 
+    const eorScore = eor_final_score !== null && eor_final_score !== undefined ? eor_final_score : eor_raw_score;
+
     const flags = {
-        rotationEndPassed: rotationEnd < today,
-        studentEvalComp: student_evaluation_of_preceptor_complete === '2',
-        preceptorEvalComp: hasCompletePreceptorEvaluation,
-        aquiferCaseComp: hasCompleteAquiferCase,
-        patientLogComp: patient_log_complete === '2',
-        avgScoreHigh: average_score > 3,
-        commFormsComp: communication_forms_complete === '2',
-        noFailEor: fail_eor === '0',
-        eorRepeatScoreLow: eor_repeat_score && eor_repeat_score < 380,
-        startDatePassed: startDate < today,
+        RotationStarted: startDate < today,
+        RotationEnded: rotationEnd < today,
+        SEPComplete: student_evaluation_of_preceptor_complete === '2',
+        PESComplete: hasCompletePreceptorEvaluation,
+        AquiferComplete: hasCompleteAquiferCase,
+        PatientLog: patient_log_complete === '2',
+        PESSatisfactory: average_score > 3,
+        FeedbackSent: communication_forms_complete === '2',
+        EORPassed: fail_eor === '0',
+        EORRetake: eorScore && eorScore < 380,
         startDateOrEqual: startDate <= today,
+        EORScore: eorScore,
     };
 
     // Determine class name and criteria based on flags
-    if (flags.rotationEndPassed && flags.studentEvalComp && flags.preceptorEvalComp && flags.aquiferCaseComp && flags.patientLogComp && flags.avgScoreHigh && flags.commFormsComp && flags.noFailEor) {
+    if (flags.RotationEnded && flags.SEPComplete && flags.PESComplete && flags.AquiferComplete && flags.PatientLog && flags.PESSatisfactory && flags.FeedbackSent && flags.EORPassed) {
         result.className = 'bg_rotationend';
         result.criteria.push('Rotation Ended', 'SEP Complete', 'PES Complete', 'Aquifer Complete', 'Patient Log', 'PES Satisfactory', 'Feedback Sent', 'EOR Passed');
-    } else if (flags.startDatePassed && ((flags.studentEvalComp && flags.preceptorEvalComp && flags.aquiferCaseComp && flags.patientLogComp && !flags.commFormsComp) || flags.noFailEor)) {
+    } else if (flags.RotationStarted && ((flags.SEPComplete && flags.PESComplete && flags.AquiferComplete && flags.PatientLog && !flags.FeedbackSent) || flags.EORPassed)) {
         result.className = 'bg_rotationongoing';
         result.criteria.push('Rotation Started', 'SEP Complete', 'PES Complete', 'Aquifer Complete', 'Patient Log', 'PES Satisfactory', 'Feedback Sent', 'EOR Passed');
-    } else if (flags.startDateOrEqual && (!flags.studentEvalComp || !flags.preceptorEvalComp || !flags.aquiferCaseComp || !flags.patientLogComp || flags.eorRepeatScoreLow)) {
+    } else if (flags.startDateOrEqual && (!flags.SEPComplete || !flags.PESComplete || !flags.AquiferComplete || !flags.PatientLog || flags.EORRetake)) {
         result.className = 'bg_rotationstart';
         result.criteria.push('Rotation Started', 'SEP Complete', 'PES Complete', 'Aquifer Complete', 'Patient Log', 'EOR Retake');
-    } else if (flags.startDatePassed) {
+    } else if (flags.RotationStarted) {
         result.className = 'bg_complete';
         result.criteria.push('Rotation Started');
     }
@@ -219,23 +225,32 @@ function App() {
                                                 </div>
                                             )}
                                             {(isAdminView && hasRotationData && cssInfo.data) && (
-                                                <div className={`student_links`}>
-                                                    <p onClick={() => toggleCriteriaVisibility(`${studentIndex}_${index}`)} className={`status-criteria-toggle ${criteriaVisibility[`${studentIndex}_${index}`] ? 'expanded' : ''}`}>
-                                                        Status Criteria
-                                                    </p>
+                                                <>
+                                                    <div className={`student_links`}>
+                                                        <p onClick={() => toggleCriteriaVisibility(`${studentIndex}_${index}`)}
+                                                           className={`status-criteria-toggle ${criteriaVisibility[`${studentIndex}_${index}`] ? 'expanded' : ''}`}>
+                                                            Status Criteria
+                                                        </p>
 
-                                                    {showCriteria && (
-                                                        <ul className="status_criteria">
-                                                            {Object.entries(cssInfo.data).map(([key, value]) => (
-                                                                <li key={key}>
-                                                                    <a href="#!" className={cssInfo.criteria.includes(key) ? 'highlight_critera' : ''} style={{ color: value ? 'green' : 'red' }}>
-                                                                        {`${key}: ${value}`}
-                                                                    </a>
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    )}
-                                                </div>
+                                                        {showCriteria && (
+                                                            <ul className="status_criteria">
+                                                                {Object.entries(cssInfo.data).map(([key, value]) => (
+                                                                    <li key={key}>
+                                                                        <a href="#!"
+                                                                           className={cssInfo.criteria.includes(key) ? 'highlight_critera' : ''}
+                                                                           style={{color: value ? 'green' : 'red'}}>
+                                                                            {`${key}: ${value}`}
+                                                                        </a>
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        )}
+                                                    </div>
+                                                    <div className={`student_scores`}>
+                                                        <p>EOR Score: {period.eor_final_score !== null && period.eor_final_score !== undefined ? period.eor_final_score : 'NA'}</p>
+                                                        <p>Avg Score: {period.average_score !== null && period.average_score !== undefined ? period.average_score : 'NA'}</p>
+                                                    </div>
+                                                </>
                                             )}
                                         </td>
                                     );

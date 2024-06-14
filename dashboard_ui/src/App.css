@@ -58,5 +58,9 @@
     content:")";
 }
 
-
+.data-table td div.student_scores p {
+    padding:0;
+    margin:0;
+    font-size:85%;
+}
 /* Add other CSS styles as needed */
