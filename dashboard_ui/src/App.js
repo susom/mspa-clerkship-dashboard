@@ -26,7 +26,6 @@ const getCssClassForRotation = (rotationData, isAdminView) => {
         specialty,
     } = rotationData;
 
-    console.log("getCssClassforRotation ; aquifer302, aquifer304, aquifer311,aquifer_other,   average_score,eor_raw_score,eor_repeat_score, eor_final_score, communication_forms_complete", aquifer302, aquifer304, aquifer311,aquifer_other,   average_score,eor_raw_score,eor_repeat_score, eor_final_score, communication_forms_complete);
     const today = new Date();
     const startDate = new Date(start_date);
     const rotationEnd = new Date(startDate);
@@ -111,7 +110,6 @@ const getCssClassForRotation = (rotationData, isAdminView) => {
 //     }
 
     result.data = flags; // Consolidated condition checks for easy reference
-    console.log("what flags", result);
     return result;
 };
 
@@ -234,7 +232,6 @@ function App() {
                                     const cssInfo = getCssClassForRotation(period, isAdminView);
                                     const hasRotationData = period.location || period.specialty;
                                     const showCriteria = criteriaVisibility[`${studentIndex}_${index}`];
-
                                     return (
                                         <td key={index} className={cssInfo.className}>
                                             <Tooltip title={period.siteAddress} position="top" key={index}>
@@ -288,8 +285,13 @@ function App() {
                                                         )}
                                                     </div>
                                                     <div className={`student_scores`}>
-                                                        <p>EOR Score: {period.eor_final_score !== null && period.eor_final_score !== undefined ? period.eor_final_score.toFixed(2) : 'NA'}</p>
-                                                        <p>Eval Avg Score: {period.average_score !== null && period.average_score !== undefined ? period.average_score.toFixed(2) : 'NA'}</p>
+                                                        <p>EOR Score: {
+                                                            period.eor_repeat_score !== '' && !isNaN(period.eor_repeat_score) ? Number(period.eor_repeat_score).toFixed(2) :
+                                                                period.eor_raw_score !== '' && !isNaN(period.eor_raw_score) ? Number(period.eor_raw_score).toFixed(2) :
+                                                                    'NA'
+                                                        }</p>
+                                                        <p>Eval Avg
+                                                            Score: {period.average_score !== null && period.average_score !== undefined ? period.average_score.toFixed(2) : 'NA'}</p>
                                                     </div>
                                                 </>
                                             )}

@@ -267,9 +267,7 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
 
     public function getMSPAProjectData($studentData){
         $student_rotation_ids  =  array_keys($studentData);
-//        $this->emDebug("student_rotation_ids", $student_rotation_ids, current($studentData));
 
-        //LETS GET ALL THE RECORD IDS FOR OUR STUDENTS IN THE MSPA PROJECT
         $filters = [];
         foreach($student_rotation_ids as $student_rotation_id) {
             list($junk, $student_name) = explode("_", $student_rotation_id);
@@ -285,9 +283,7 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
         );
         $data = REDCap::getData($params);
         $mspa_record_ids = array_keys($data);
-//        $this->emDebug("mspa project record_id by students", $mspa_record_ids);
 
-        //NOW LETS GET THE ACTUAL MSPA PROJECT VARIABLES
         $mspaAcademicProgressFields = array(
             "record_id",
             "first_name",
@@ -305,15 +301,13 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
 
         $params = array(
             'project_id' => $this->project_id_mspa,
-            'return_format' => 'array', // Specifies the format of the returned data
-            'fields' => $mspaAcademicProgressFields, // Retrieve all fields from the "Rotation" instrument
+            'return_format' => 'array',
+            'fields' => $mspaAcademicProgressFields,
             'records' => $mspa_record_ids
         );
         $mspa_data = REDCap::getData($params);
-//        $this->emDebug("mspa_data", $mspa_data);
+//        $this->emDebug("mspa project (18639) data", $mspa_data[studentid]);
 
-
-        //FOR PLACE HOLDER IF NO DATA
         $mspa_na_array = [
             "aquifer302" => null,
             "aquifer304" => null,
@@ -323,41 +317,36 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
             "fail_eor" => null,
             "eor_repeat_score" => null
         ];
-        $mspa_keys_to_keep = ["aquifer302", "aquifer304", "aquifer311", "aquifer_other", "fail_eor", "eor_raw_score", "eor_repeat_score"];
 
-        //NOW LOOP THROUGH THE STUDENT DATA AN ALL THE ROTATION INFO AND ADD ON ALL THE MSPA GRADES DATA
         foreach($studentData as $student_rotation_id => &$rotations){
-            //NOW WE LOOP THROUGH ALL THE MSPA DATA AND FIND THE STUDENT AND MATCH THEIR GRADES TO THEIR ROTATION AND ADD THE RIGHT VARIABLES
             foreach($mspa_data as $record_id => $student_grades){
-                // THIS SHOULD BE THE FIRST ARRAY IN THE RETURN
                 $student_mspa_info = current($student_grades);
-
-                //LOOPING THROUGH ARRAY, FIND MATCHING STUDENT
-                if( isset($student_mspa_info["last_name"]) ) {
+                if( isset($student_mspa_info["last_name"]) && isset($student_mspa_info["first_name"])) {
                     $ln = $student_mspa_info["last_name"];
                     $fn = $student_mspa_info["first_name"];
+                    $name = trim($fn . ' ' . $ln);
 
-                    if(strpos($student_rotation_id, "$ln, $fn") < 0){
+                    if(strpos($name, $rotations[0]["full_name"]) === false){
                         continue;
                     }
                 }
 
-                //MADE IT THROUGH TO FIND A MATCH
-                //OK THIS IS WEIRD, NESTED 2x... anyway to predict the keys?
-                $grades_data = ( isset($student_grades["repeat_instances"]) ) ? current(current($student_grades["repeat_instances"])) : null;
+                $nestedData = array_values($student_grades["repeat_instances"]);
+                $gradesData = isset($nestedData[0]) ? array_values($nestedData[0]) : null;
 
                 foreach($rotations as $idxkey => &$rotation){
                     $mspa_stuff = $mspa_na_array;
-                    if($grades_data){
-                        $rotation_period = $rotation["month"];
-                        foreach($grades_data as $grade_data){
-                            if($rotation_period == $grade_data["rotation_period"]){
-                                unset($grade_data["last_name"]);
-                                unset($grade_data["first_name"]);
-                                unset($grade_data["rotation"]);
-//                                unset($grade_data["rotation_period"]);
-                                $mspa_stuff = $grade_data;
-                                break;
+                    if($gradesData){
+                        $specialty = $rotation["specialty"];
+                        foreach($gradesData as $single_grade_data){
+                            foreach($single_grade_data as $grade_data){
+                                if($specialty == $grade_data["rotation"]){
+                                    unset($grade_data["last_name"]);
+                                    unset($grade_data["first_name"]);
+                                    unset($grade_data["rotation"]);
+                                    $mspa_stuff = $grade_data;
+                                    break 2;
+                                }
                             }
                         }
                     }
@@ -367,8 +356,7 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
             }
         }
         unset($rotations);
-
-//        $this->emDebug("student_data with grades", current($studentData));
+//        $this->emDebug("student_data with grades", $studentData["2025_lastname, firstname"]);
         return $studentData;
     }
 
