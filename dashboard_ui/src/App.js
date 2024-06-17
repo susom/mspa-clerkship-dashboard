@@ -26,7 +26,7 @@ const getCssClassForRotation = (rotationData, isAdminView) => {
         specialty,
     } = rotationData;
 
-    console.log("i am in gtCssClassforRotation where is average_score", average_score);
+    console.log("getCssClassforRotation ; aquifer302, aquifer304, aquifer311,aquifer_other,   average_score,eor_raw_score,eor_repeat_score, eor_final_score, communication_forms_complete", aquifer302, aquifer304, aquifer311,aquifer_other,   average_score,eor_raw_score,eor_repeat_score, eor_final_score, communication_forms_complete);
     const today = new Date();
     const startDate = new Date(start_date);
     const rotationEnd = new Date(startDate);
@@ -57,13 +57,31 @@ const getCssClassForRotation = (rotationData, isAdminView) => {
     };
 
     // Determine class name and criteria based on flags
-    if (flags.RotationEnded && flags.SEPComplete && flags.PESComplete && flags.AquiferComplete && flags.PatientLog && flags.PESSatisfactory && flags.FeedbackSent && flags.EORPassed) {
+    if (flags.RotationEnded
+        && flags.SEPComplete
+        && flags.PESComplete
+        && flags.AquiferComplete
+        && flags.PatientLog
+        && flags.PESSatisfactory
+        && flags.FeedbackSent
+        && flags.EORPassed) {
         result.className = 'bg_rotationend';
         result.criteria.push('Rotation Ended', 'SEP Complete', 'PES Complete', 'Aquifer Complete', 'Patient Log', 'PES Satisfactory', 'Feedback Sent', 'EOR Passed');
-    } else if (flags.RotationStarted && ((flags.SEPComplete && flags.PESComplete && flags.AquiferComplete && flags.PatientLog && !flags.FeedbackSent) || flags.EORPassed)) {
+    } else if (flags.RotationStarted
+        && ((flags.SEPComplete
+            && flags.PESComplete
+            && flags.AquiferComplete
+            && flags.PatientLog
+            && !flags.FeedbackSent)
+            || flags.EORPassed)) {
         result.className = 'bg_rotationongoing';
         result.criteria.push('Rotation Started', 'SEP Complete', 'PES Complete', 'Aquifer Complete', 'Patient Log', 'PES Satisfactory', 'Feedback Sent', 'EOR Passed');
-    } else if (flags.startDateOrEqual && (!flags.SEPComplete || !flags.PESComplete || !flags.AquiferComplete || !flags.PatientLog || flags.EORRetake)) {
+    } else if (flags.startDateOrEqual
+        && (!flags.SEPComplete
+            || !flags.PESComplete
+            || !flags.AquiferComplete
+            || !flags.PatientLog
+            || flags.EORRetake)) {
         result.className = 'bg_rotationstart';
         result.criteria.push('Rotation Started', 'SEP Complete', 'PES Complete', 'Aquifer Complete', 'Patient Log', 'EOR Retake');
     } else if (flags.RotationStarted) {
@@ -76,7 +94,24 @@ const getCssClassForRotation = (rotationData, isAdminView) => {
         result.criteria = [];
     }
 
+// .bg_complete {
+//         background: #5F7C8A; gray
+//     }
+//
+// .bg_rotationend {
+//         background: #1E8449; green
+//     }
+//
+// .bg_rotationongoing {
+//         background: #FFFF00; /* Standard yellow */
+//     }
+//
+// .bg_rotationstart {
+//         background: #efa099; salmon
+//     }
+
     result.data = flags; // Consolidated condition checks for easy reference
+    console.log("what flags", result);
     return result;
 };
 
@@ -234,21 +269,27 @@ function App() {
 
                                                         {showCriteria && (
                                                             <ul className="status_criteria">
-                                                                {Object.entries(cssInfo.data).map(([key, value]) => (
-                                                                    <li key={key}>
-                                                                        <a href="#!"
-                                                                           className={cssInfo.criteria.includes(key) ? 'highlight_critera' : ''}
-                                                                           style={{color: value ? 'green' : 'red'}}>
-                                                                            {`${key}: ${value}`}
-                                                                        </a>
-                                                                    </li>
-                                                                ))}
+                                                                {cssInfo.criteria.map((criteriaItem) => {
+                                                                    const dataKey = criteriaItem.replace(/\s/g, '');  // removes spaces from criteria
+                                                                    const value = cssInfo.data[dataKey];
+
+                                                                    return (
+                                                                        <li key={dataKey}>
+                                                                            <a href="#!"
+                                                                               className={value ? 'highlight_critera' : ''}
+                                                                               style={{color: value ? 'green' : 'red'}}
+                                                                            >
+                                                                                {`${criteriaItem}: ${value}`}
+                                                                            </a>
+                                                                        </li>
+                                                                    );
+                                                                })}
                                                             </ul>
                                                         )}
                                                     </div>
                                                     <div className={`student_scores`}>
-                                                        <p>EOR Score: {period.eor_final_score !== null && period.eor_final_score !== undefined ? period.eor_final_score : 'NA'}</p>
-                                                        <p>Avg Score: {period.average_score !== null && period.average_score !== undefined ? period.average_score : 'NA'}</p>
+                                                        <p>EOR Score: {period.eor_final_score !== null && period.eor_final_score !== undefined ? period.eor_final_score.toFixed(2) : 'NA'}</p>
+                                                        <p>Eval Avg Score: {period.average_score !== null && period.average_score !== undefined ? period.average_score.toFixed(2) : 'NA'}</p>
                                                     </div>
                                                 </>
                                             )}
