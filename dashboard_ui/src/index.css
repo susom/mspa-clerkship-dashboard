@@ -1,14 +1,14 @@
 body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
 
@@ -18,12 +18,12 @@ code {
 }
 
 .bg_rotationend {
-    background: #1E8449;
+    background: #3CB371; /* Softer green */
     color: #FFFFFF;
 }
 
 .bg_rotationongoing {
-    background: #FFFF00; /* Standard yellow */
+    background: #FFD700; /* Softer yellow */
     color: #000000;
 }
 
@@ -31,7 +31,6 @@ code {
     background: #efa099;
     color: #FFFFFF;
 }
-
 
 .student_links,
 .student_schedule {
@@ -61,18 +60,23 @@ code {
     content: " -";
 }
 
-.data-table td  .status_criteria {
+.data-table td .status_criteria {
     margin:0; padding:0;
     text-align:left;
     list-style:none;
-
 }
-.data-table td  .status_criteria li a {
-    color:#333;
+
+.data-table td .status_criteria li a {
+    color:#000000; /* Black text for better contrast */
     font-size:65%;
 }
 
-.data-table td  .status_criteria li a.highlight_critera {
-    color:green;
+.data-table td .status_criteria li a.highlight_critera {
+    color:#006400; /* Darker green for better contrast */
+    font-weight:bold;
+}
+
+.data-table td .status_criteria li a.incomplete_criteria {
+    color:#8B0000; /* Darker red for better contrast */
     font-weight:bold;
 }

@@ -273,8 +273,7 @@ function App() {
                                                                     return (
                                                                         <li key={dataKey}>
                                                                             <a href="#!"
-                                                                               className={value ? 'highlight_critera' : ''}
-                                                                               style={{color: value ? 'green' : 'red'}}
+                                                                               className={value ? 'highlight_critera' : 'incomplete_criteria'}
                                                                             >
                                                                                 {`${criteriaItem}: ${value}`}
                                                                             </a>
