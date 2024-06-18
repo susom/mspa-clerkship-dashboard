@@ -344,6 +344,7 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
                                     unset($grade_data["last_name"]);
                                     unset($grade_data["first_name"]);
                                     unset($grade_data["rotation"]);
+                                    unset($grade_data["record_id"]);
                                     $mspa_stuff = $grade_data;
                                     break 2;
                                 }
@@ -356,7 +357,7 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
             }
         }
         unset($rotations);
-//        $this->emDebug("student_data with grades", $studentData["2025_lastname, firstname"]);
+//        $this->emDebug("student_data with grades", $studentData["2025_lastname, Judith"]);
         return $studentData;
     }
 
