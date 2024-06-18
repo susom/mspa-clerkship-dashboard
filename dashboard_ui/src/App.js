@@ -13,6 +13,7 @@ const getCssClassForRotation = (rotationData, isAdminView) => {
         preceptor_evals = [],
         communication_forms_complete,
         patient_log_complete,
+        clerkship_finalgrade,
         eor_final_score,
         eor_raw_score,
         fail_eor,
@@ -43,8 +44,8 @@ const getCssClassForRotation = (rotationData, isAdminView) => {
     // Check if any preceptor eval has communication_forms_complete === 2
     const feedbackSentFromPreceptors = preceptor_evals.some(evaluation => evaluation.communication_forms_complete === '2');
 
-
     const flags = {
+        NonPassingClerkshipFinalGrade:  clerkship_finalgrade !== 1,
         RotationStarted: startDate < today,
         RotationEnded: rotationEnd < today,
         SEPComplete: student_evaluation_of_preceptor_complete === '2',
@@ -175,6 +176,15 @@ function App() {
 
     students.sort((a, b) => a.lastName.localeCompare(b.lastName));
 
+    const gradeLabels = {
+        1: 'Pass (+)',
+        7: 'Incomplete (N)',
+        8: 'Grade Not Reported (GNR)',
+        9: 'Marginal Pass (MP)',
+        10: 'Fail (-)'
+    };
+
+
     return (
         <div className="App">
             <div className={`table-container`}>
@@ -296,6 +306,10 @@ function App() {
 
                                                         <p>Eval Avg
                                                             Score: {period.average_score !== null && period.average_score !== undefined ? period.average_score.toFixed(2) : 'NA'}</p>
+
+                                                        <p>Clerkship Final Grade: {
+                                                            period.clerkship_finalgrade !== undefined && period.clerkship_finalgrade !== null ? gradeLabels[period.clerkship_finalgrade] || 'Unknown' : 'NA'
+                                                        }</p>
                                                     </div>
                                                 </>
                                             )}
