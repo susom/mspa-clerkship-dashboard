@@ -296,7 +296,8 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
             "aquifer_other",
             "eor_raw_score",
             "fail_eor",
-            "eor_repeat_score"
+            "eor_repeat_score",
+            "clerkship_finalgrade"
         );
 
         $params = array(

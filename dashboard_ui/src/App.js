@@ -40,6 +40,10 @@ const getCssClassForRotation = (rotationData, isAdminView) => {
 
     const eorScore = eor_final_score !== null && eor_final_score !== undefined ? eor_final_score : eor_raw_score;
 
+    // Check if any preceptor eval has communication_forms_complete === 2
+    const feedbackSentFromPreceptors = preceptor_evals.some(evaluation => evaluation.communication_forms_complete === '2');
+
+
     const flags = {
         RotationStarted: startDate < today,
         RotationEnded: rotationEnd < today,
@@ -48,7 +52,7 @@ const getCssClassForRotation = (rotationData, isAdminView) => {
         AquiferComplete: hasCompleteAquiferCase,
         PatientLog: patient_log_complete === '2',
         PESSatisfactory: average_score > 3,
-        FeedbackSent: communication_forms_complete === '2',
+        FeedbackSent: feedbackSentFromPreceptors || communication_forms_complete === '2',
         EORPassed: fail_eor === '0',
         EORRetake: eorScore && eorScore < 380,
         startDateOrEqual: startDate <= today,
@@ -285,10 +289,11 @@ function App() {
                                                     </div>
                                                     <div className={`student_scores`}>
                                                         <p>EOR Score: {
-                                                            period.eor_repeat_score !== '' && !isNaN(period.eor_repeat_score) ? Number(period.eor_repeat_score).toFixed(2) :
-                                                                period.eor_raw_score !== '' && !isNaN(period.eor_raw_score) ? Number(period.eor_raw_score).toFixed(2) :
+                                                            period.eor_repeat_score !== '' && period.eor_repeat_score !== null ? period.eor_repeat_score :
+                                                                period.eor_raw_score !== '' && period.eor_raw_score !== null ? period.eor_raw_score :
                                                                     'NA'
                                                         }</p>
+
                                                         <p>Eval Avg
                                                             Score: {period.average_score !== null && period.average_score !== undefined ? period.average_score.toFixed(2) : 'NA'}</p>
                                                     </div>
