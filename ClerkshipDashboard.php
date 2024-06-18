@@ -307,7 +307,7 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
             'records' => $mspa_record_ids
         );
         $mspa_data = REDCap::getData($params);
-//        $this->emDebug("mspa project (18639) data", $mspa_data[studentid]);
+//        $this->emDebug("mspa project (18639) data", $mspa_data);
 
         $mspa_na_array = [
             "aquifer302" => null,
@@ -316,7 +316,8 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
             "aquifer_other" => null,
             "eor_raw_score" => null,
             "fail_eor" => null,
-            "eor_repeat_score" => null
+            "eor_repeat_score" => null,
+            "clerkship_finalgrade" => null
         ];
 
         foreach($studentData as $student_rotation_id => &$rotations){
@@ -358,7 +359,7 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
             }
         }
         unset($rotations);
-//        $this->emDebug("student_data with grades", $studentData["2025_lastname, Judith"]);
+//        $this->emDebug("student_data with grades", $studentData["2025_Carlson, firstname"]);
         return $studentData;
     }
 
