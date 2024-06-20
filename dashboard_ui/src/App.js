@@ -9,9 +9,7 @@ const getCssClassForRotation = (rotationData, isAdminView) => {
     let result = { className: '', criteria: [], data: {} };
 
     const {
-        student_evaluation_of_preceptor_complete,
         preceptor_evals = [],
-        communication_forms_complete,
         patient_log_complete,
         clerkship_finalgrade,
         eor_final_score,
@@ -43,17 +41,20 @@ const getCssClassForRotation = (rotationData, isAdminView) => {
 
     // Check if any preceptor eval has communication_forms_complete === 2
     const feedbackSentFromPreceptors = preceptor_evals.some(evaluation => evaluation.communication_forms_complete === '2');
+    const studentEvalofPreceptors = preceptor_evals.some(evaluation => evaluation.student_evaluation_of_preceptor_complete === '2');
+
+    console.log("rotationData" ,rotationData)
 
     const flags = {
         NonPassingClerkshipFinalGrade:  clerkship_finalgrade !== 1,
         RotationStarted: startDate < today,
         RotationEnded: rotationEnd < today,
-        SEPComplete: student_evaluation_of_preceptor_complete === '2',
+        SEPComplete: studentEvalofPreceptors ,
         PESComplete: hasCompletePreceptorEvaluation,
         AquiferComplete: hasCompleteAquiferCase,
         PatientLog: patient_log_complete === '2',
         PESSatisfactory: average_score > 3,
-        FeedbackSent: feedbackSentFromPreceptors || communication_forms_complete === '2',
+        FeedbackSent: feedbackSentFromPreceptors ,
         EORPassed: fail_eor === '0',
         EORRetake: eorScore && eorScore < 380,
         startDateOrEqual: startDate <= today,
