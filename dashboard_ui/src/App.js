@@ -53,13 +53,13 @@ const getCssClassForRotation = (rotationData, isAdminView) => {
         PatientLog: patient_log_complete === '2',
         PESSatisfactory: average_score > 3,
         FeedbackSent: feedbackSentFromPreceptors ,
-        EORPassed: fail_eor === '0',
+        EORPassed: fail_eor === '0' || (eorScore && eorScore >= 380),
         EORRetake: eorScore && eorScore < 380,
         startDateOrEqual: startDate <= today,
         EORScore: eorScore,
     };
 
-    console.log("flags", rotationData.student_id, rotationData.month , flags);
+    console.log("flags", rotationData, flags);
     // Determine class name and criteria based on flags
     if (flags.RotationEnded
         && flags.SEPComplete

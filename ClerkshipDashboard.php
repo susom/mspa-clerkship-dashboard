@@ -249,37 +249,10 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
                 }
             }
         }
-//        $this->emLog("getting students from current project before adding mspa and other stuff", $students["2025_Zheng, Ann"] );
-//        [0] => 2025_Houston, Nathaniel
-//        [1] => 2025_Kurt, Lisa
-//        [2] => 2025_Zheng, Ann
-//        [3] => 2025_Shojinaga, Melanie
-//        [4] => 2025_Landry, Brooke
-//        [5] => 2025_Maduchukwu, Chigozie
-//        [6] => 2025_Magee, Benjamin
-//        [7] => 2025_Ghosh, Anamika
-//        [8] => 2025_Nomof, Venice
-//        [9] => 2025_Pineda, Gino
-//        [10] => 2025_Henderson, Hannah
-//        [11] => 2025_Kim, Ted
-//        [12] => 2025_Wu, Tina
-//        [13] => 2025_Carlson, Judith
-//        [14] => 2025_Kennedy, Rachel
-//        [15] => 2025_Kim, Jun Hee
-//        [16] => 2025_Lee, Evan
-//        [17] => 2025_Perras, Brooke
-//        [18] => 2025_Liu, Jamie
-//        [19] => 2025_Hutchison, Jacqueline
-//        [20] => 2025_Ogata, Rachel
-//        [21] => 2025_Scarano, Danielle
-//        [22] => 2025_Ngo, Darren
-//        [23] => 2025_Awwad, Ayah
-//        [24] => 2025_Patel, Karishma
-//        [25] => 2025_Stannard, Whitney
-//        [26] => 2025_Wardak, Haseebullah
+
 
         $students = $this->getStatusData($students, $year);
-//        $this->emLog("getRotationsForYear example", $students["2025_Zheng, Ann"] );
+//        $this->emLog("getRotationsForYear example", $students["2025_Zheng, fname"] );
 
 
         return $students;
