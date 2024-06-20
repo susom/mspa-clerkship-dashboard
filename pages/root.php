@@ -35,7 +35,7 @@ $periodDates    = $module->generatePeriodDates($startDates);
     </script>
 
     <?php
-        $module->injectJSMO();
+//        $module->injectJSMO();
         foreach ($build_files as $file)
             echo $file;
     ?>

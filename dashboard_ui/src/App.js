@@ -43,8 +43,6 @@ const getCssClassForRotation = (rotationData, isAdminView) => {
     const feedbackSentFromPreceptors = preceptor_evals.some(evaluation => evaluation.communication_forms_complete === '2');
     const studentEvalofPreceptors = preceptor_evals.some(evaluation => evaluation.student_evaluation_of_preceptor_complete === '2');
 
-    console.log("rotationData" ,rotationData)
-
     const flags = {
         NonPassingClerkshipFinalGrade:  clerkship_finalgrade !== 1,
         RotationStarted: startDate < today,
@@ -61,6 +59,7 @@ const getCssClassForRotation = (rotationData, isAdminView) => {
         EORScore: eorScore,
     };
 
+    console.log("flags", rotationData.student_id, rotationData.month , flags);
     // Determine class name and criteria based on flags
     if (flags.RotationEnded
         && flags.SEPComplete
