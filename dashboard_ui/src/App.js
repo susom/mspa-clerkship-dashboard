@@ -59,7 +59,7 @@ const getCssClassForRotation = (rotationData, isAdminView) => {
         EORScore: eorScore,
     };
 
-    console.log("flags", rotationData, flags);
+    // console.log("flags", rotationData, flags);
     // Determine class name and criteria based on flags
     if (flags.RotationEnded
         && flags.SEPComplete
