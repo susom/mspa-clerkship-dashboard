@@ -342,14 +342,12 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
                 foreach($rotations as $idxkey => &$rotation){
                     $mspa_stuff = $mspa_na_array;
                     if($gradesData){
-                        $specialty = $rotation["specialty"];
+                        $rotationPeriod = $rotation["month"];
                         foreach($gradesData as $single_grade_data){
                             foreach($single_grade_data as $grade_data){
-                                if($specialty == $grade_data["rotation"]){
-                                    unset($grade_data["last_name"]);
-                                    unset($grade_data["first_name"]);
-                                    unset($grade_data["rotation"]);
-                                    unset($grade_data["record_id"]);
+                                $gradeRotationMonth = $this->convertRotationPeriodToMonth($grade_data["rotation_period"]);
+                                if ($rotationPeriod == $gradeRotationMonth) {
+                                    unset($grade_data["last_name"], $grade_data["first_name"], $grade_data["rotation"], $grade_data["record_id"]);
                                     $mspa_stuff = $grade_data;
                                     break 2;
                                 }
@@ -362,8 +360,27 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
             }
         }
         unset($rotations);
-//        $this->emDebug("student_data with grades", $studentData["2025_Carlson, firstname"]);
+//        $this->emDebug("student_data with grades", $studentData["2025_Zheng, fname"]);
         return $studentData;
+    }
+
+    public function convertRotationPeriodToMonth($rotationPeriod) {
+        $mapping = [
+            1 => 10,
+            2 => 11,
+            3 => 12,
+            4 => 1,
+            5 => 2,
+            6 => 3,
+            7 => 4,
+            8 => 5,
+            9 => 6,
+            10 => 7,
+            11 => 8,
+            12 => 9,
+        ];
+
+        return $mapping[$rotationPeriod] ?? null;
     }
 
     public function getClerkShipEvalData($studentData, $year) {
@@ -412,7 +429,7 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
 
         $studentData = $this->mergeClerkshipDataWithStudentData($studentData, $just_this_year);
 
-        $this->emDebug("studentData", $studentData);
+//        $this->emDebug("studentData", $studentData);
         // Optional: Process $allClerkshipEvalData as needed to augment $studentData
         // This step will depend on how you need to integrate or use the retrieved data with your existing student data
 
