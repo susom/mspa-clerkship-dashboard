@@ -120,9 +120,14 @@ const getCssClassForRotation = (rotationData, isAdminView) => {
 
 // Function to extract specialty abbreviation from record_id
 const getSpecialtyFromRecordId = (recordId) => {
+    if (typeof recordId !== 'string') {
+        console.error("Invalid recordId:", recordId);
+        return "";
+    }
     const parts = recordId.split('_');
     return parts.length > 2 ? parts[2] : "";
 };
+
 
 function App() {
     const [periodDates, setPeriodDates] = useState({});
