@@ -174,7 +174,11 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
         );
 
         //if only want to show one student
-        if(!is_null($student_id)){
+        if (!is_null($student_id)) {
+            $parts = explode('_', $student_id);
+            $year = trim($parts[0]);
+
+            // Set filterLogic to fetch the student's record
             $params["filterLogic"] = "[student_id] = '$student_id'";
         }
 
@@ -184,7 +188,6 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
         foreach ($data as $recordId => $nestedData) {
             if (is_array($nestedData) && count($nestedData) > 0) {
                 foreach ($nestedData as $eventId => $event) {
-
                     // Check if the student_id starts with the specified year
                     if (strpos($event['student_id'], $year) === 0) {
                         //Per Rotation Links
@@ -311,7 +314,6 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
             'records' => $mspa_record_ids
         );
         $mspa_data = REDCap::getData($params);
-//        $this->emDebug("mspa project (18639) data", $mspa_data);
 
         $mspa_na_array = [
             "aquifer302" => null,
