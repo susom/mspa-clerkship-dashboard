@@ -91,6 +91,7 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
         $students       = array();
         $filterLogics   = array();
         $email_lookup   = array();
+
         foreach($data as $student_key => $nested){
             $studentDetails = current($nested);
 
@@ -114,6 +115,7 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
             'filterLogic' => implode(" || ", $filterLogics)
         );
         $data = REDCap::getData($params);
+
         foreach ($data as $nestedData) {
             if (is_array($nestedData) && count($nestedData) > 0) {
                 foreach ($nestedData as $eventId => $event) {
@@ -250,9 +252,8 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
             }
         }
 
-
         $students = $this->getStatusData($students, $year);
-//        $this->emLog("getRotationsForYear example", $students["2025_Zheng, fname"] );
+
 
 
         return $students;
@@ -336,7 +337,10 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
                     }
                 }
 
-                $nestedData = array_values($student_grades["repeat_instances"]);
+                $nestedData = isset($student_grades["repeat_instances"]) && is_array($student_grades["repeat_instances"])
+                    ? array_values($student_grades["repeat_instances"])
+                    : [];
+
                 $gradesData = isset($nestedData[0]) ? array_values($nestedData[0]) : null;
 
                 foreach($rotations as $idxkey => &$rotation){
