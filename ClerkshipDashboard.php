@@ -554,7 +554,11 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
         }
 
         // Period sequence
-        $periodSequence = ['Period 10', 'Period 11', 'Period 12', 'Period 1', 'Period 2', 'Period 3', 'Period 4', 'Period 5', 'Period 6', 'Period 7', 'Period 8', 'Period 9'];
+        $periodSequence = [
+            'Period 10', 'Period 11', 'Period 12', 'Period 1', 'Period 2',
+            'Period 3', 'Period 4', 'Period 5', 'Period 6', 'Period 7',
+            'Period 8', 'Period 9'
+        ];
 
         $periodDates = [];
         $previousYear = null;
@@ -566,39 +570,36 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
             }
 
             $startDate = $dates[$index];
-
-            // Check if the date is valid
             $startDateTime = DateTime::createFromFormat('m-d-Y', $startDate);
             if ($startDateTime === false) {
-                // Skip invalid dates
                 $periodDates[$period] = ['start' => 'n/a', 'end' => 'n/a'];
                 continue;
             }
 
             $year = $startDateTime->format('Y');
-
-            // Format the start date
             $startFormatted = $startDateTime->format('n/j');
             if ($previousYear !== $year) {
                 $startFormatted .= '/' . $startDateTime->format('y');
                 $previousYear = $year;
             }
 
-            // Calculate the end date
+            // Adjust offset for Period 9: subtract 7 days from the offset
+            $adjustedOffset = ($period === 'Period 9') ? ($endDateOffset - 7) : $endDateOffset;
+
+            // Calculate the end date with the adjusted offset
             $endDateTime = clone $startDateTime;
-            $endDateTime->modify("+$endDateOffset days");
+            $endDateTime->modify("+$adjustedOffset days");
             $endFormatted = $endDateTime->format('n/j');
 
-            // Add to the periodDates array
             $periodDates[$period] = [
                 'start' => $startFormatted,
                 'end' => $endFormatted
             ];
         }
 
-        // $this->emLog("generatePeriodDates", $periodDates);
         return $periodDates;
     }
+
 
     /**
      * @return array
