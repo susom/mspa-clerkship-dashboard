@@ -583,8 +583,8 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
                 $previousYear = $year;
             }
 
-            // Adjust offset for Period 9: subtract 7 days from the offset
-            $adjustedOffset = ($period === 'Period 9') ? ($endDateOffset - 7) : $endDateOffset;
+            // Adjust offset for Period 9: subtract 6 days from the offset
+            $adjustedOffset = ($period === 'Period 9') ? ($endDateOffset - 6) : $endDateOffset;
 
             // Calculate the end date with the adjusted offset
             $endDateTime = clone $startDateTime;
