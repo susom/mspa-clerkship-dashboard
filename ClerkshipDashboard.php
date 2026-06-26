@@ -91,6 +91,7 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
         $students       = array();
         $filterLogics   = array();
         $email_lookup   = array();
+
         foreach($data as $student_key => $nested){
             $studentDetails = current($nested);
 
@@ -114,6 +115,7 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
             'filterLogic' => implode(" || ", $filterLogics)
         );
         $data = REDCap::getData($params);
+
         foreach ($data as $nestedData) {
             if (is_array($nestedData) && count($nestedData) > 0) {
                 foreach ($nestedData as $eventId => $event) {
@@ -172,7 +174,11 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
         );
 
         //if only want to show one student
-        if(!is_null($student_id)){
+        if (!is_null($student_id)) {
+            $parts = explode('_', $student_id);
+            $year = trim($parts[0]);
+
+            // Set filterLogic to fetch the student's record
             $params["filterLogic"] = "[student_id] = '$student_id'";
         }
 
@@ -182,7 +188,6 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
         foreach ($data as $recordId => $nestedData) {
             if (is_array($nestedData) && count($nestedData) > 0) {
                 foreach ($nestedData as $eventId => $event) {
-
                     // Check if the student_id starts with the specified year
                     if (strpos($event['student_id'], $year) === 0) {
                         //Per Rotation Links
@@ -250,9 +255,8 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
             }
         }
 
-
         $students = $this->getStatusData($students, $year);
-//        $this->emLog("getRotationsForYear example", $students["2025_Zheng, fname"] );
+
 
 
         return $students;
@@ -310,7 +314,6 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
             'records' => $mspa_record_ids
         );
         $mspa_data = REDCap::getData($params);
-//        $this->emDebug("mspa project (18639) data", $mspa_data);
 
         $mspa_na_array = [
             "aquifer302" => null,
@@ -336,7 +339,10 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
                     }
                 }
 
-                $nestedData = array_values($student_grades["repeat_instances"]);
+                $nestedData = isset($student_grades["repeat_instances"]) && is_array($student_grades["repeat_instances"])
+                    ? array_values($student_grades["repeat_instances"])
+                    : [];
+
                 $gradesData = isset($nestedData[0]) ? array_values($nestedData[0]) : null;
 
                 foreach($rotations as $idxkey => &$rotation){
@@ -548,7 +554,11 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
         }
 
         // Period sequence
-        $periodSequence = ['Period 10', 'Period 11', 'Period 12', 'Period 1', 'Period 2', 'Period 3', 'Period 4', 'Period 5', 'Period 6', 'Period 7', 'Period 8', 'Period 9'];
+        $periodSequence = [
+            'Period 10', 'Period 11', 'Period 12', 'Period 1', 'Period 2',
+            'Period 3', 'Period 4', 'Period 5', 'Period 6', 'Period 7',
+            'Period 8', 'Period 9'
+        ];
 
         $periodDates = [];
         $previousYear = null;
@@ -560,39 +570,36 @@ class ClerkshipDashboard extends \ExternalModules\AbstractExternalModule {
             }
 
             $startDate = $dates[$index];
-
-            // Check if the date is valid
             $startDateTime = DateTime::createFromFormat('m-d-Y', $startDate);
             if ($startDateTime === false) {
-                // Skip invalid dates
                 $periodDates[$period] = ['start' => 'n/a', 'end' => 'n/a'];
                 continue;
             }
 
             $year = $startDateTime->format('Y');
-
-            // Format the start date
             $startFormatted = $startDateTime->format('n/j');
             if ($previousYear !== $year) {
                 $startFormatted .= '/' . $startDateTime->format('y');
                 $previousYear = $year;
             }
 
-            // Calculate the end date
+            // Adjust offset for Period 9: subtract 6 days from the offset
+            $adjustedOffset = ($period === 'Period 9') ? ($endDateOffset - 6) : $endDateOffset;
+
+            // Calculate the end date with the adjusted offset
             $endDateTime = clone $startDateTime;
-            $endDateTime->modify("+$endDateOffset days");
+            $endDateTime->modify("+$adjustedOffset days");
             $endFormatted = $endDateTime->format('n/j');
 
-            // Add to the periodDates array
             $periodDates[$period] = [
                 'start' => $startFormatted,
                 'end' => $endFormatted
             ];
         }
 
-        // $this->emLog("generatePeriodDates", $periodDates);
         return $periodDates;
     }
+
 
     /**
      * @return array
